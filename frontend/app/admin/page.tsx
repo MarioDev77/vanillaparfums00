@@ -1,10 +1,10 @@
-import { auth } from '@/lib/auth'
-import { headers } from 'next/headers'
 import { redirect } from 'next/navigation'
+import { backendFetch } from '@/lib/admin-server'
 import AdminDashboard from './dashboard'
 
 export default async function AdminPage() {
-  const session = await auth.api.getSession({ headers: await headers() })
-  if (!session?.user) redirect('/admin/login')
-  return <AdminDashboard userName={session.user.name} />
+  const session = await backendFetch('/auth/me')
+  if (!session.ok) redirect('/admin/login')
+  const data = await session.json()
+  return <AdminDashboard userName={data.user.name} />
 }

@@ -1,18 +1,62 @@
 'use client'
-import { FormEvent, useEffect, useState } from 'react'
-import { ImagePlus, LogOut, Plus, Trash2 } from 'lucide-react'
-import { authClient } from '@/lib/auth-client'
+import { useState } from 'react'
+import { useRouter } from 'next/navigation'
+import { LogOut } from 'lucide-react'
+import ProductsPanel from '@/components/admin/ProductsPanel'
+import StockPanel from '@/components/admin/StockPanel'
+import OrdersPanel from '@/components/admin/OrdersPanel'
+import CategoriesPanel from '@/components/admin/CategoriesPanel'
 
-type Product = { id: number; name: string; category: string; description: string; imageUrl: string; notes: string; price: string }
-const empty = { name: '', category: 'feminino', description: '', notes: '', price: '', imageUrl: '' }
+const TABS = [
+  { id: 'products', label: 'Produtos' },
+  { id: 'stock', label: 'Estoque' },
+  { id: 'orders', label: 'Pedidos' },
+  { id: 'categories', label: 'Categorias' },
+] as const
+
+type Tab = (typeof TABS)[number]['id']
 
 export default function AdminDashboard({ userName }: { userName: string }) {
-  const [products, setProducts] = useState<Product[]>([])
-  const [form, setForm] = useState(empty)
-  const [saving, setSaving] = useState(false)
-  const [message, setMessage] = useState('')
-  useEffect(() => { fetch('/api/products').then((r) => r.json()).then(setProducts) }, [])
-  async function upload(file?: File) { if (!file) return; const data = new FormData(); data.append('file', file); const result = await fetch('/api/upload', { method: 'POST', body: data }); const json = await result.json(); if (result.ok) setForm((value) => ({ ...value, imageUrl: json.url })); else setMessage(json.error) }
-  async function save(event: FormEvent) { event.preventDefault(); setSaving(true); setMessage(''); const result = await fetch('/api/products', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(form) }); const json = await result.json(); if (result.ok) { setProducts((value) => [json, ...value]); setForm(empty); setMessage('Produto cadastrado com sucesso.'); } else setMessage(json.error); setSaving(false) }
-  return <main className="min-h-screen bg-secondary"><header className="border-b border-border bg-background"><div className="mx-auto flex max-w-7xl items-center justify-between px-5 py-5 lg:px-10"><div><p className="text-[10px] uppercase tracking-[0.3em] text-accent">Contratipos</p><h1 className="mt-1 font-serif text-3xl">Painel de produtos</h1></div><div className="flex items-center gap-4"><span className="hidden text-sm text-muted-foreground sm:block">Olá, {userName}</span><button onClick={() => authClient.signOut().then(() => location.assign('/admin/login'))} aria-label="Sair"><LogOut size={18} /></button></div></div></header><div className="mx-auto grid max-w-7xl gap-8 px-5 py-8 lg:grid-cols-[380px_1fr] lg:px-10"><form onSubmit={save} className="h-fit bg-background p-6"><div className="flex items-center justify-between"><h2 className="font-serif text-2xl">Novo produto</h2><Plus size={20} /></div><div className="mt-6 grid gap-4"><label className="text-xs uppercase tracking-widest">Nome<input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} required className="mt-2 w-full border border-border bg-transparent p-3" /></label><label className="text-xs uppercase tracking-widest">Categoria<select value={form.category} onChange={(e) => setForm({ ...form, category: e.target.value })} className="mt-2 w-full border border-border bg-transparent p-3"><option value="feminino">Feminino</option><option value="masculino">Masculino</option><option value="cremes">Cremes</option></select></label><label className="text-xs uppercase tracking-widest">Preço<input value={form.price} onChange={(e) => setForm({ ...form, price: e.target.value })} placeholder="89.90" className="mt-2 w-full border border-border bg-transparent p-3" /></label><label className="text-xs uppercase tracking-widest">Descrição<textarea value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} rows={3} className="mt-2 w-full border border-border bg-transparent p-3" /></label><label className="text-xs uppercase tracking-widest">Componentes / notas olfativas<input value={form.notes} onChange={(e) => setForm({ ...form, notes: e.target.value })} placeholder="Baunilha, âmbar, sândalo" className="mt-2 w-full border border-border bg-transparent p-3" /></label><label className="flex cursor-pointer items-center gap-3 border border-dashed border-border p-4 text-xs uppercase tracking-widest"><ImagePlus size={18} />{form.imageUrl ? 'Imagem carregada' : 'Enviar foto'}<input type="file" accept="image/*" onChange={(e) => upload(e.target.files?.[0])} className="sr-only" /></label></div>{message && <p className="mt-4 text-sm text-accent-foreground">{message}</p>}<button disabled={saving} className="mt-6 w-full bg-primary p-3 text-xs uppercase tracking-widest text-primary-foreground disabled:opacity-50">{saving ? 'Salvando...' : 'Cadastrar produto'}</button></form><section><div className="mb-5 flex items-end justify-between"><div><p className="text-[10px] uppercase tracking-[0.3em] text-muted-foreground">Catálogo conectado ao Neon</p><h2 className="mt-2 font-serif text-3xl">Produtos cadastrados</h2></div><span className="text-sm text-muted-foreground">{products.length} itens</span></div><div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">{products.map((product) => <article key={product.id} className="bg-background p-3"><div className="aspect-square bg-secondary">{product.imageUrl && <img src={product.imageUrl} alt={product.name} className="h-full w-full object-cover" />}</div><div className="p-2"><p className="text-[10px] uppercase tracking-widest text-muted-foreground">{product.category}</p><h3 className="mt-1 font-serif text-xl">{product.name}</h3><p className="mt-2 line-clamp-2 text-sm text-muted-foreground">{product.description}</p><p className="mt-2 text-xs text-accent-foreground">Notas: {product.notes || 'Não informadas'}</p></div></article>)}</div></section></div></main>
+  const [tab, setTab] = useState<Tab>('products')
+  const router = useRouter()
+
+  async function logout() {
+    await fetch('/api/admin/logout', { method: 'POST' })
+    router.push('/admin/login')
+  }
+
+  return (
+    <main className="min-h-screen bg-secondary">
+      <header className="border-b border-border bg-background">
+        <div className="mx-auto flex max-w-7xl items-center justify-between px-5 py-5 lg:px-10">
+          <div>
+            <p className="text-[10px] uppercase tracking-[0.3em] text-accent">Vanilla Parfums</p>
+            <h1 className="mt-1 font-serif text-3xl">Painel administrativo</h1>
+          </div>
+          <div className="flex items-center gap-4">
+            <span className="hidden text-sm text-muted-foreground sm:block">Olá, {userName}</span>
+            <button onClick={logout} aria-label="Sair"><LogOut size={18} /></button>
+          </div>
+        </div>
+        <nav className="mx-auto flex max-w-7xl gap-1 px-5 lg:px-10">
+          {TABS.map((t) => (
+            <button
+              key={t.id}
+              onClick={() => setTab(t.id)}
+              className={`border-b-2 px-4 py-3 text-xs uppercase tracking-widest ${tab === t.id ? 'border-accent text-accent-foreground' : 'border-transparent text-muted-foreground'}`}
+            >
+              {t.label}
+            </button>
+          ))}
+        </nav>
+      </header>
+
+      <div className="mx-auto max-w-7xl px-5 py-8 lg:px-10">
+        {tab === 'products' && <ProductsPanel />}
+        {tab === 'stock' && <StockPanel />}
+        {tab === 'orders' && <OrdersPanel />}
+        {tab === 'categories' && <CategoriesPanel />}
+      </div>
+    </main>
+  )
 }
