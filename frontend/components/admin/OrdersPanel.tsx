@@ -8,8 +8,6 @@ export default function OrdersPanel() {
   const [selected, setSelected] = useState<Order | null>(null)
   const [loading, setLoading] = useState(true)
   const [updating, setUpdating] = useState(false)
-  const [search, setSearch] = useState('')
-  const [statusFilter, setStatusFilter] = useState('')
 
   async function load() {
     setLoading(true)
@@ -17,15 +15,6 @@ export default function OrdersPanel() {
     setLoading(false)
   }
   useEffect(() => { load() }, [])
-
-  const filteredOrders = orders.filter((order) => {
-    const matchesStatus = !statusFilter || order.status === statusFilter
-    const term = search.trim().toLowerCase()
-    const matchesSearch = !term
-      || order.order_number.toLowerCase().includes(term)
-      || (order.customer_name ?? '').toLowerCase().includes(term)
-    return matchesStatus && matchesSearch
-  })
 
   async function open(order: Order) {
     const detail = await adminJson<Order>(`/orders/${order.id}`)
@@ -51,27 +40,13 @@ export default function OrdersPanel() {
     <div className="grid gap-8 lg:grid-cols-[1fr_380px]">
       <section>
         <h2 className="mb-5 font-serif text-3xl">Pedidos</h2>
-
-        <div className="mb-5 grid gap-3 sm:grid-cols-2">
-          <input
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            placeholder="Buscar por número do pedido ou cliente..."
-            className="rounded-md border border-border bg-background/60 p-3 text-sm focus:border-accent focus:outline-none"
-          />
-          <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)} className="rounded-md border border-border bg-background/60 p-3 text-sm">
-            <option value="">Todos os status</option>
-            {ORDER_STATUSES.map((s) => <option key={s.value} value={s.value}>{s.label}</option>)}
-          </select>
-        </div>
-
         {loading ? (
           <p className="text-sm text-muted-foreground">Carregando...</p>
-        ) : filteredOrders.length === 0 ? (
-          <p className="text-sm text-muted-foreground">Nenhum pedido encontrado.</p>
+        ) : orders.length === 0 ? (
+          <p className="text-sm text-muted-foreground">Nenhum pedido ainda.</p>
         ) : (
           <div className="grid gap-2">
-            {filteredOrders.map((order) => (
+            {orders.map((order) => (
               <button
                 key={order.id}
                 onClick={() => open(order)}

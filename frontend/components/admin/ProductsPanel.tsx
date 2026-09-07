@@ -11,8 +11,8 @@ const empty = {
   featured: false, best_seller: false, image_url: '',
 }
 
-const inputClass = 'mt-2 w-full rounded-md border border-border bg-background/60 p-3 text-sm transition-colors focus:border-accent focus:outline-none'
-const labelClass = 'block text-xs uppercase tracking-widest text-muted-foreground'
+const inputClass = 'mt-1 w-full rounded-md border border-border bg-background/60 p-2 text-sm transition-colors focus:border-accent focus:outline-none'
+const labelClass = 'block text-[11px] uppercase tracking-widest text-muted-foreground'
 
 export default function ProductsPanel() {
   const [products, setProducts] = useState<Product[]>([])
@@ -23,26 +23,11 @@ export default function ProductsPanel() {
   const [uploading, setUploading] = useState(false)
   const [message, setMessage] = useState('')
   const [loading, setLoading] = useState(true)
-  const [search, setSearch] = useState('')
-  const [searchInput, setSearchInput] = useState('')
-  const [genderFilter, setGenderFilter] = useState('')
-  const [categoryFilter, setCategoryFilter] = useState('')
-
-  // Debounce da busca por texto pra não disparar uma requisição a cada tecla.
-  useEffect(() => {
-    const timeout = setTimeout(() => setSearch(searchInput), 350)
-    return () => clearTimeout(timeout)
-  }, [searchInput])
 
   async function load() {
     setLoading(true)
-    const params = new URLSearchParams()
-    if (search) params.set('q', search)
-    if (genderFilter) params.set('gender', genderFilter)
-    if (categoryFilter) params.set('category_id', categoryFilter)
-    const qs = params.toString() ? `?${params.toString()}` : ''
     const [productsData, categoriesData] = await Promise.all([
-      adminJson<Product[]>(`/products${qs}`),
+      adminJson<Product[]>('/products'),
       adminJson<Category[]>('/categories'),
     ])
     setProducts(productsData)
@@ -50,7 +35,7 @@ export default function ProductsPanel() {
     setLoading(false)
   }
 
-  useEffect(() => { load() }, [search, genderFilter, categoryFilter])
+  useEffect(() => { load() }, [])
 
   function startEdit(product: Product) {
     setEditingId(product.id)
@@ -134,8 +119,8 @@ export default function ProductsPanel() {
   }
 
   return (
-    <div className="grid gap-8 lg:grid-cols-[420px_1fr]">
-      <form onSubmit={save} className="h-fit rounded-xl bg-background p-6 shadow-sm">
+    <div className="grid gap-8 lg:grid-cols-[480px_1fr]">
+      <form onSubmit={save} className="h-fit rounded-xl bg-background p-5 shadow-sm">
         <div className="flex items-center justify-between">
           <h2 className="font-serif text-2xl">{editingId ? 'Editar produto' : 'Novo produto'}</h2>
           {editingId ? (
@@ -145,8 +130,8 @@ export default function ProductsPanel() {
           )}
         </div>
 
-        <div className="mt-6 grid gap-5">
-          <label className={labelClass}>Nome
+        <div className="mt-4 grid grid-cols-2 gap-3">
+          <label className={`${labelClass} col-span-2`}>Nome
             <input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} required className={inputClass} />
           </label>
 
@@ -169,8 +154,8 @@ export default function ProductsPanel() {
             <input value={form.olfactory_family} onChange={(e) => setForm({ ...form, olfactory_family: e.target.value })} className={inputClass} />
           </label>
 
-          <label className={labelClass}>Descrição
-            <textarea value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} rows={3} className={inputClass} />
+          <label className={`${labelClass} col-span-2`}>Descrição
+            <textarea value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} rows={2} className={inputClass} />
           </label>
 
           <label className={labelClass}>Notas de saída
@@ -205,24 +190,24 @@ export default function ProductsPanel() {
             </select>
           </label>
 
-          <div className="flex flex-col gap-3 text-xs uppercase tracking-widest">
+          <div className="col-span-2 flex items-center gap-5 text-[11px] uppercase tracking-widest">
             <label className="flex items-center gap-2"><input type="checkbox" checked={form.featured} onChange={(e) => setForm({ ...form, featured: e.target.checked })} /> Destaque</label>
             <label className="flex items-center gap-2"><input type="checkbox" checked={form.best_seller} onChange={(e) => setForm({ ...form, best_seller: e.target.checked })} /> Mais vendido</label>
           </div>
 
-          <div>
+          <div className="col-span-2">
             <span className={labelClass}>Foto do produto</span>
             {form.image_url ? (
-              <div className="mt-2 flex items-center gap-3">
-                <img src={form.image_url} alt="Prévia" className="h-20 w-20 rounded-md object-cover" />
-                <label className="flex-1 cursor-pointer rounded-md border border-dashed border-border p-3 text-center text-xs uppercase tracking-widest hover:bg-secondary">
+              <div className="mt-1 flex items-center gap-3">
+                <img src={form.image_url} alt="Prévia" className="h-16 w-16 rounded-md object-cover" />
+                <label className="flex-1 cursor-pointer rounded-md border border-dashed border-border p-2 text-center text-[11px] uppercase tracking-widest hover:bg-secondary">
                   {uploading ? 'Enviando...' : 'Trocar foto'}
                   <input type="file" accept="image/*" onChange={(e) => upload(e.target.files?.[0])} className="sr-only" disabled={uploading} />
                 </label>
               </div>
             ) : (
-              <label className="mt-2 flex cursor-pointer items-center justify-center gap-3 rounded-md border border-dashed border-border p-6 text-xs uppercase tracking-widest hover:bg-secondary">
-                {uploading ? <Loader2 size={18} className="animate-spin" /> : <ImagePlus size={18} />}
+              <label className="mt-1 flex cursor-pointer items-center justify-center gap-3 rounded-md border border-dashed border-border p-4 text-[11px] uppercase tracking-widest hover:bg-secondary">
+                {uploading ? <Loader2 size={16} className="animate-spin" /> : <ImagePlus size={16} />}
                 {uploading ? 'Enviando...' : 'Enviar foto'}
                 <input type="file" accept="image/*" onChange={(e) => upload(e.target.files?.[0])} className="sr-only" disabled={uploading} />
               </label>
@@ -230,8 +215,8 @@ export default function ProductsPanel() {
           </div>
         </div>
 
-        {message && <p className="mt-4 text-sm text-accent-foreground">{message}</p>}
-        <button disabled={saving || uploading} className="mt-6 w-full rounded-md bg-primary p-3 text-xs uppercase tracking-widest text-primary-foreground transition-opacity hover:opacity-90 disabled:opacity-50">
+        {message && <p className="mt-3 text-sm text-accent-foreground">{message}</p>}
+        <button disabled={saving || uploading} className="mt-4 w-full rounded-md bg-primary p-3 text-xs uppercase tracking-widest text-primary-foreground transition-opacity hover:opacity-90 disabled:opacity-50">
           {saving ? 'Salvando...' : editingId ? 'Salvar alterações' : 'Cadastrar produto'}
         </button>
       </form>
@@ -244,26 +229,6 @@ export default function ProductsPanel() {
           </div>
           <span className="text-sm text-muted-foreground">{products.length} itens</span>
         </div>
-
-        <div className="mb-6 grid gap-3 sm:grid-cols-3">
-          <input
-            value={searchInput}
-            onChange={(e) => setSearchInput(e.target.value)}
-            placeholder="Buscar por nome ou código..."
-            className="rounded-md border border-border bg-background/60 p-3 text-sm focus:border-accent focus:outline-none"
-          />
-          <select value={genderFilter} onChange={(e) => setGenderFilter(e.target.value)} className="rounded-md border border-border bg-background/60 p-3 text-sm">
-            <option value="">Todos os gêneros</option>
-            <option value="feminino">Feminino</option>
-            <option value="masculino">Masculino</option>
-            <option value="unissex">Unissex</option>
-          </select>
-          <select value={categoryFilter} onChange={(e) => setCategoryFilter(e.target.value)} className="rounded-md border border-border bg-background/60 p-3 text-sm">
-            <option value="">Todas as categorias</option>
-            {categories.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
-          </select>
-        </div>
-
         {loading ? (
           <p className="text-sm text-muted-foreground">Carregando...</p>
         ) : (

@@ -96,13 +96,6 @@ export const ORDER_STATUSES: { value: OrderStatus; label: string }[] = [
   { value: 'cancelado', label: 'Cancelado' },
 ]
 
-export type DashboardStats = {
-  revenue: string | number
-  orders_count: number
-  by_status: { status: OrderStatus; count: string | number }[]
-  top_products: { id: number; code: string; name: string; total_quantity: string | number; total_revenue: string | number }[]
-}
-
 export function formatMoney(value: string | number) {
   const n = typeof value === 'string' ? parseFloat(value) : value
   return n.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })
