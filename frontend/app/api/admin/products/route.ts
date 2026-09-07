@@ -1,8 +1,10 @@
 import { backendFetch, relay } from '@/lib/admin-server'
 
-export async function GET() {
+export async function GET(request: Request) {
   // Sem available_only=true: o admin precisa ver também os produtos esgotados/inativos.
-  const response = await backendFetch('/products')
+  // Repassa os filtros (q, category_id, gender, sort) que o backend já suporta.
+  const { search } = new URL(request.url)
+  const response = await backendFetch(`/products${search}`)
   return relay(response)
 }
 

@@ -6,8 +6,10 @@ import ProductsPanel from '@/components/admin/ProductsPanel'
 import StockPanel from '@/components/admin/StockPanel'
 import OrdersPanel from '@/components/admin/OrdersPanel'
 import CategoriesPanel from '@/components/admin/CategoriesPanel'
+import DashboardPanel from '@/components/admin/DashboardPanel'
 
 const TABS = [
+  { id: 'dashboard', label: 'Dashboard' },
   { id: 'products', label: 'Produtos' },
   { id: 'stock', label: 'Estoque' },
   { id: 'orders', label: 'Pedidos' },
@@ -17,7 +19,7 @@ const TABS = [
 type Tab = (typeof TABS)[number]['id']
 
 export default function AdminDashboard({ userName }: { userName: string }) {
-  const [tab, setTab] = useState<Tab>('products')
+  const [tab, setTab] = useState<Tab>('dashboard')
   const router = useRouter()
 
   async function logout() {
@@ -52,6 +54,7 @@ export default function AdminDashboard({ userName }: { userName: string }) {
       </header>
 
       <div className="mx-auto max-w-7xl px-5 py-8 lg:px-10">
+        {tab === 'dashboard' && <DashboardPanel />}
         {tab === 'products' && <ProductsPanel />}
         {tab === 'stock' && <StockPanel />}
         {tab === 'orders' && <OrdersPanel />}

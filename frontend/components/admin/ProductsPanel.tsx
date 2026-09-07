@@ -23,11 +23,26 @@ export default function ProductsPanel() {
   const [uploading, setUploading] = useState(false)
   const [message, setMessage] = useState('')
   const [loading, setLoading] = useState(true)
+  const [search, setSearch] = useState('')
+  const [searchInput, setSearchInput] = useState('')
+  const [genderFilter, setGenderFilter] = useState('')
+  const [categoryFilter, setCategoryFilter] = useState('')
+
+  // Debounce da busca por texto pra não disparar uma requisição a cada tecla.
+  useEffect(() => {
+    const timeout = setTimeout(() => setSearch(searchInput), 350)
+    return () => clearTimeout(timeout)
+  }, [searchInput])
 
   async function load() {
     setLoading(true)
+    const params = new URLSearchParams()
+    if (search) params.set('q', search)
+    if (genderFilter) params.set('gender', genderFilter)
+    if (categoryFilter) params.set('category_id', categoryFilter)
+    const qs = params.toString() ? `?${params.toString()}` : ''
     const [productsData, categoriesData] = await Promise.all([
-      adminJson<Product[]>('/products'),
+      adminJson<Product[]>(`/products${qs}`),
       adminJson<Category[]>('/categories'),
     ])
     setProducts(productsData)
@@ -35,7 +50,7 @@ export default function ProductsPanel() {
     setLoading(false)
   }
 
-  useEffect(() => { load() }, [])
+  useEffect(() => { load() }, [search, genderFilter, categoryFilter])
 
   function startEdit(product: Product) {
     setEditingId(product.id)
@@ -229,6 +244,26 @@ export default function ProductsPanel() {
           </div>
           <span className="text-sm text-muted-foreground">{products.length} itens</span>
         </div>
+
+        <div className="mb-6 grid gap-3 sm:grid-cols-3">
+          <input
+            value={searchInput}
+            onChange={(e) => setSearchInput(e.target.value)}
+            placeholder="Buscar por nome ou código..."
+            className="rounded-md border border-border bg-background/60 p-3 text-sm focus:border-accent focus:outline-none"
+          />
+          <select value={genderFilter} onChange={(e) => setGenderFilter(e.target.value)} className="rounded-md border border-border bg-background/60 p-3 text-sm">
+            <option value="">Todos os gêneros</option>
+            <option value="feminino">Feminino</option>
+            <option value="masculino">Masculino</option>
+            <option value="unissex">Unissex</option>
+          </select>
+          <select value={categoryFilter} onChange={(e) => setCategoryFilter(e.target.value)} className="rounded-md border border-border bg-background/60 p-3 text-sm">
+            <option value="">Todas as categorias</option>
+            {categories.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
+          </select>
+        </div>
+
         {loading ? (
           <p className="text-sm text-muted-foreground">Carregando...</p>
         ) : (
