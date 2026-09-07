@@ -37,7 +37,7 @@ export default function CategoriesPanel() {
 
   return (
     <div className="grid gap-8 lg:grid-cols-[380px_1fr]">
-      <form onSubmit={save} className="h-fit bg-background p-6">
+      <form onSubmit={save} className="h-fit rounded-xl bg-background p-6 shadow-sm">
         <h2 className="font-serif text-2xl">Nova categoria</h2>
         <div className="mt-6 grid gap-4">
           <label className="text-xs uppercase tracking-widest">Nome
@@ -64,7 +64,7 @@ export default function CategoriesPanel() {
         <h2 className="mb-5 font-serif text-3xl">Categorias cadastradas</h2>
         <div className="grid gap-2">
           {categories.map((category) => (
-            <div key={category.id} className="flex items-center justify-between bg-background p-4">
+            <div key={category.id} className="flex items-center justify-between rounded-xl bg-background p-4 shadow-sm">
               <div>
                 <p className="font-serif text-lg">{category.name}</p>
                 <p className="text-xs text-muted-foreground">/{category.slug} · {category.gender}</p>

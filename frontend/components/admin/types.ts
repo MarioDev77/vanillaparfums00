@@ -100,3 +100,11 @@ export function formatMoney(value: string | number) {
   const n = typeof value === 'string' ? parseFloat(value) : value
   return n.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })
 }
+
+/** Converte um número digitado no formato brasileiro ("120,50" ou "1.200,50") para float. */
+export function parseBrNumber(value: string): number {
+  if (!value) return 0
+  const normalized = value.trim().replace(/\./g, '').replace(',', '.')
+  const n = parseFloat(normalized)
+  return Number.isFinite(n) ? n : 0
+}

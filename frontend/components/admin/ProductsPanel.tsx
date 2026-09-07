@@ -1,8 +1,8 @@
 'use client'
 import { FormEvent, useEffect, useState } from 'react'
-import { ImagePlus, Pencil, Plus, Trash2, X } from 'lucide-react'
+import { ImagePlus, Loader2, Pencil, Plus, Trash2, X } from 'lucide-react'
 import { adminFetch, adminJson } from '@/lib/admin-client'
-import { Category, Product, formatMoney } from './types'
+import { Category, Product, formatMoney, parseBrNumber } from './types'
 
 const empty = {
   code: '', name: '', category_id: '', olfactory_family: '', description: '',
@@ -11,12 +11,16 @@ const empty = {
   featured: false, best_seller: false, image_url: '',
 }
 
+const inputClass = 'mt-2 w-full rounded-md border border-border bg-background/60 p-3 text-sm transition-colors focus:border-accent focus:outline-none'
+const labelClass = 'block text-xs uppercase tracking-widest text-muted-foreground'
+
 export default function ProductsPanel() {
   const [products, setProducts] = useState<Product[]>([])
   const [categories, setCategories] = useState<Category[]>([])
   const [form, setForm] = useState(empty)
   const [editingId, setEditingId] = useState<number | null>(null)
   const [saving, setSaving] = useState(false)
+  const [uploading, setUploading] = useState(false)
   const [message, setMessage] = useState('')
   const [loading, setLoading] = useState(true)
 
@@ -40,9 +44,9 @@ export default function ProductsPanel() {
       olfactory_family: product.olfactory_family ?? '', description: product.description ?? '',
       top_notes: product.top_notes ?? '', heart_notes: product.heart_notes ?? '', base_notes: product.base_notes ?? '',
       fixation: product.fixation ?? '', projection: product.projection ?? '', size_ml: String(product.size_ml ?? '50'),
-      price: String(product.price ?? ''), cost: String(product.cost ?? ''), min_stock: String(product.min_stock ?? '5'),
-      status: product.status, featured: !!product.featured, best_seller: !!product.best_seller,
-      image_url: product.image_url ?? '',
+      price: String(product.price ?? '').replace('.', ','), cost: String(product.cost ?? '').replace('.', ','),
+      min_stock: String(product.min_stock ?? '5'), status: product.status,
+      featured: !!product.featured, best_seller: !!product.best_seller, image_url: product.image_url ?? '',
     })
     setMessage('')
     window.scrollTo({ top: 0, behavior: 'smooth' })
@@ -56,12 +60,19 @@ export default function ProductsPanel() {
 
   async function upload(file?: File) {
     if (!file) return
-    const data = new FormData()
-    data.append('file', file)
-    const response = await adminFetch('/upload', { method: 'POST', body: data })
-    const json = await response.json()
-    if (response.ok) setForm((value) => ({ ...value, image_url: json.url }))
-    else setMessage(json.error)
+    setUploading(true)
+    setMessage('')
+    try {
+      const data = new FormData()
+      data.append('file', file)
+      const response = await adminFetch('/upload', { method: 'POST', body: data })
+      const json = await response.json()
+      if (response.ok) setForm((value) => ({ ...value, image_url: json.url }))
+      else setMessage(json.error || 'Não foi possível enviar a imagem.')
+    } catch {
+      setMessage('Não foi possível enviar a imagem.')
+    }
+    setUploading(false)
   }
 
   async function save(event: FormEvent) {
@@ -72,9 +83,14 @@ export default function ProductsPanel() {
       ...form,
       category_id: form.category_id ? Number(form.category_id) : null,
       size_ml: Number(form.size_ml) || 50,
-      price: Number(form.price),
-      cost: Number(form.cost) || 0,
+      price: parseBrNumber(form.price),
+      cost: parseBrNumber(form.cost),
       min_stock: Number(form.min_stock) || 5,
+    }
+    if (!payload.code || !payload.name || !payload.price) {
+      setMessage('Código, nome e preço são obrigatórios.')
+      setSaving(false)
+      return
     }
     try {
       if (editingId) {
@@ -103,80 +119,104 @@ export default function ProductsPanel() {
   }
 
   return (
-    <div className="grid gap-8 lg:grid-cols-[380px_1fr]">
-      <form onSubmit={save} className="h-fit bg-background p-6">
+    <div className="grid gap-8 lg:grid-cols-[420px_1fr]">
+      <form onSubmit={save} className="h-fit rounded-xl bg-background p-6 shadow-sm">
         <div className="flex items-center justify-between">
           <h2 className="font-serif text-2xl">{editingId ? 'Editar produto' : 'Novo produto'}</h2>
           {editingId ? (
-            <button type="button" onClick={cancelEdit} aria-label="Cancelar edição"><X size={20} /></button>
+            <button type="button" onClick={cancelEdit} aria-label="Cancelar edição" className="rounded-full p-1 hover:bg-secondary"><X size={20} /></button>
           ) : (
-            <Plus size={20} />
+            <Plus size={20} className="text-muted-foreground" />
           )}
         </div>
-        <div className="mt-6 grid gap-4">
-          <div className="grid grid-cols-2 gap-3">
-            <label className="text-xs uppercase tracking-widest">Código
-              <input value={form.code} onChange={(e) => setForm({ ...form, code: e.target.value })} required className="mt-2 w-full border border-border bg-transparent p-3" />
-            </label>
-            <label className="text-xs uppercase tracking-widest">Preço (R$)
-              <input value={form.price} onChange={(e) => setForm({ ...form, price: e.target.value })} placeholder="89.90" required className="mt-2 w-full border border-border bg-transparent p-3" />
-            </label>
-          </div>
-          <label className="text-xs uppercase tracking-widest">Nome
-            <input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} required className="mt-2 w-full border border-border bg-transparent p-3" />
+
+        <div className="mt-6 grid gap-5">
+          <label className={labelClass}>Nome
+            <input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} required className={inputClass} />
           </label>
-          <label className="text-xs uppercase tracking-widest">Categoria
-            <select value={form.category_id} onChange={(e) => setForm({ ...form, category_id: e.target.value })} className="mt-2 w-full border border-border bg-transparent p-3">
+
+          <label className={labelClass}>Código
+            <input value={form.code} onChange={(e) => setForm({ ...form, code: e.target.value })} required className={inputClass} />
+          </label>
+
+          <label className={labelClass}>Preço (R$)
+            <input value={form.price} onChange={(e) => setForm({ ...form, price: e.target.value })} placeholder="89,90" inputMode="decimal" required className={inputClass} />
+          </label>
+
+          <label className={labelClass}>Categoria
+            <select value={form.category_id} onChange={(e) => setForm({ ...form, category_id: e.target.value })} className={inputClass}>
               <option value="">Sem categoria</option>
               {categories.map((c) => <option key={c.id} value={c.id}>{c.name} ({c.gender})</option>)}
             </select>
           </label>
-          <label className="text-xs uppercase tracking-widest">Família olfativa
-            <input value={form.olfactory_family} onChange={(e) => setForm({ ...form, olfactory_family: e.target.value })} className="mt-2 w-full border border-border bg-transparent p-3" />
+
+          <label className={labelClass}>Família olfativa
+            <input value={form.olfactory_family} onChange={(e) => setForm({ ...form, olfactory_family: e.target.value })} className={inputClass} />
           </label>
-          <label className="text-xs uppercase tracking-widest">Descrição
-            <textarea value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} rows={3} className="mt-2 w-full border border-border bg-transparent p-3" />
+
+          <label className={labelClass}>Descrição
+            <textarea value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} rows={3} className={inputClass} />
           </label>
-          <div className="grid gap-3">
-            <label className="text-xs uppercase tracking-widest">Notas de saída
-              <input value={form.top_notes} onChange={(e) => setForm({ ...form, top_notes: e.target.value })} className="mt-2 w-full border border-border bg-transparent p-3" />
-            </label>
-            <label className="text-xs uppercase tracking-widest">Notas de coração
-              <input value={form.heart_notes} onChange={(e) => setForm({ ...form, heart_notes: e.target.value })} className="mt-2 w-full border border-border bg-transparent p-3" />
-            </label>
-            <label className="text-xs uppercase tracking-widest">Notas de fundo
-              <input value={form.base_notes} onChange={(e) => setForm({ ...form, base_notes: e.target.value })} className="mt-2 w-full border border-border bg-transparent p-3" />
-            </label>
-          </div>
-          <div className="grid grid-cols-3 gap-3">
-            <label className="text-xs uppercase tracking-widest">Tamanho (ml)
-              <input value={form.size_ml} onChange={(e) => setForm({ ...form, size_ml: e.target.value })} className="mt-2 w-full border border-border bg-transparent p-3" />
-            </label>
-            <label className="text-xs uppercase tracking-widest">Custo (R$)
-              <input value={form.cost} onChange={(e) => setForm({ ...form, cost: e.target.value })} className="mt-2 w-full border border-border bg-transparent p-3" />
-            </label>
-            <label className="text-xs uppercase tracking-widest">Estoque mín.
-              <input value={form.min_stock} onChange={(e) => setForm({ ...form, min_stock: e.target.value })} className="mt-2 w-full border border-border bg-transparent p-3" />
-            </label>
-          </div>
-          <label className="text-xs uppercase tracking-widest">Status
-            <select value={form.status} onChange={(e) => setForm({ ...form, status: e.target.value })} className="mt-2 w-full border border-border bg-transparent p-3">
+
+          <label className={labelClass}>Notas de saída
+            <input value={form.top_notes} onChange={(e) => setForm({ ...form, top_notes: e.target.value })} className={inputClass} />
+          </label>
+
+          <label className={labelClass}>Notas de coração
+            <input value={form.heart_notes} onChange={(e) => setForm({ ...form, heart_notes: e.target.value })} className={inputClass} />
+          </label>
+
+          <label className={labelClass}>Notas de fundo
+            <input value={form.base_notes} onChange={(e) => setForm({ ...form, base_notes: e.target.value })} className={inputClass} />
+          </label>
+
+          <label className={labelClass}>Tamanho (ml)
+            <input value={form.size_ml} onChange={(e) => setForm({ ...form, size_ml: e.target.value })} className={inputClass} />
+          </label>
+
+          <label className={labelClass}>Custo (R$)
+            <input value={form.cost} onChange={(e) => setForm({ ...form, cost: e.target.value })} placeholder="30,00" inputMode="decimal" className={inputClass} />
+          </label>
+
+          <label className={labelClass}>Estoque mínimo
+            <input value={form.min_stock} onChange={(e) => setForm({ ...form, min_stock: e.target.value })} className={inputClass} />
+          </label>
+
+          <label className={labelClass}>Status
+            <select value={form.status} onChange={(e) => setForm({ ...form, status: e.target.value })} className={inputClass}>
               <option value="available">Disponível</option>
               <option value="sold_out">Esgotado</option>
               <option value="inactive">Inativo</option>
             </select>
           </label>
-          <div className="flex gap-6 text-xs uppercase tracking-widest">
+
+          <div className="flex flex-col gap-3 text-xs uppercase tracking-widest">
             <label className="flex items-center gap-2"><input type="checkbox" checked={form.featured} onChange={(e) => setForm({ ...form, featured: e.target.checked })} /> Destaque</label>
             <label className="flex items-center gap-2"><input type="checkbox" checked={form.best_seller} onChange={(e) => setForm({ ...form, best_seller: e.target.checked })} /> Mais vendido</label>
           </div>
-          <label className="flex cursor-pointer items-center gap-3 border border-dashed border-border p-4 text-xs uppercase tracking-widest">
-            <ImagePlus size={18} />{form.image_url ? 'Imagem carregada' : 'Enviar foto'}
-            <input type="file" accept="image/*" onChange={(e) => upload(e.target.files?.[0])} className="sr-only" />
-          </label>
+
+          <div>
+            <span className={labelClass}>Foto do produto</span>
+            {form.image_url ? (
+              <div className="mt-2 flex items-center gap-3">
+                <img src={form.image_url} alt="Prévia" className="h-20 w-20 rounded-md object-cover" />
+                <label className="flex-1 cursor-pointer rounded-md border border-dashed border-border p-3 text-center text-xs uppercase tracking-widest hover:bg-secondary">
+                  {uploading ? 'Enviando...' : 'Trocar foto'}
+                  <input type="file" accept="image/*" onChange={(e) => upload(e.target.files?.[0])} className="sr-only" disabled={uploading} />
+                </label>
+              </div>
+            ) : (
+              <label className="mt-2 flex cursor-pointer items-center justify-center gap-3 rounded-md border border-dashed border-border p-6 text-xs uppercase tracking-widest hover:bg-secondary">
+                {uploading ? <Loader2 size={18} className="animate-spin" /> : <ImagePlus size={18} />}
+                {uploading ? 'Enviando...' : 'Enviar foto'}
+                <input type="file" accept="image/*" onChange={(e) => upload(e.target.files?.[0])} className="sr-only" disabled={uploading} />
+              </label>
+            )}
+          </div>
         </div>
+
         {message && <p className="mt-4 text-sm text-accent-foreground">{message}</p>}
-        <button disabled={saving} className="mt-6 w-full bg-primary p-3 text-xs uppercase tracking-widest text-primary-foreground disabled:opacity-50">
+        <button disabled={saving || uploading} className="mt-6 w-full rounded-md bg-primary p-3 text-xs uppercase tracking-widest text-primary-foreground transition-opacity hover:opacity-90 disabled:opacity-50">
           {saving ? 'Salvando...' : editingId ? 'Salvar alterações' : 'Cadastrar produto'}
         </button>
       </form>
@@ -194,8 +234,8 @@ export default function ProductsPanel() {
         ) : (
           <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
             {products.map((product) => (
-              <article key={product.id} className="bg-background p-3">
-                <div className="aspect-square bg-secondary">
+              <article key={product.id} className="rounded-xl bg-background p-3 shadow-sm">
+                <div className="aspect-square overflow-hidden rounded-md bg-secondary">
                   {product.image_url && <img src={product.image_url} alt={product.name} className="h-full w-full object-cover" />}
                 </div>
                 <div className="p-2">
@@ -209,8 +249,8 @@ export default function ProductsPanel() {
                   <p className="text-xs text-muted-foreground">Cód. {product.code} · Estoque: {product.stock_quantity}</p>
                   <p className="mt-2 text-sm">{formatMoney(product.price)}</p>
                   <div className="mt-3 flex gap-2">
-                    <button onClick={() => startEdit(product)} className="flex items-center gap-1 border border-border px-3 py-2 text-[10px] uppercase tracking-widest"><Pencil size={12} /> Editar</button>
-                    <button onClick={() => remove(product)} className="flex items-center gap-1 border border-border px-3 py-2 text-[10px] uppercase tracking-widest text-red-700"><Trash2 size={12} /> Remover</button>
+                    <button onClick={() => startEdit(product)} className="flex items-center gap-1 rounded-md border border-border px-3 py-2 text-[10px] uppercase tracking-widest hover:bg-secondary"><Pencil size={12} /> Editar</button>
+                    <button onClick={() => remove(product)} className="flex items-center gap-1 rounded-md border border-border px-3 py-2 text-[10px] uppercase tracking-widest text-red-700 hover:bg-red-50"><Trash2 size={12} /> Remover</button>
                   </div>
                 </div>
               </article>

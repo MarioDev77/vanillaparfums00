@@ -47,7 +47,7 @@ export default function StockPanel() {
 
   return (
     <div className="grid gap-8 lg:grid-cols-[380px_1fr]">
-      <form onSubmit={save} className="h-fit bg-background p-6">
+      <form onSubmit={save} className="h-fit rounded-xl bg-background p-6 shadow-sm">
         <h2 className="font-serif text-2xl">Registrar movimentação</h2>
         <div className="mt-6 grid gap-4">
           <label className="text-xs uppercase tracking-widest">Produto
@@ -117,7 +117,7 @@ export default function StockPanel() {
           <h2 className="mb-4 flex items-center gap-2 font-serif text-3xl"><Package size={22} /> Estoque atual</h2>
           <div className="grid gap-2">
             {overview.products.map((p) => (
-              <div key={p.id} className="flex items-center justify-between bg-background p-3 text-sm">
+              <div key={p.id} className="flex items-center justify-between rounded-lg bg-background p-3 text-sm shadow-sm">
                 <span>{p.name} <span className="text-muted-foreground">({p.code})</span></span>
                 <span className={p.stock_quantity <= p.min_stock ? 'text-red-700' : ''}>{p.stock_quantity} un.</span>
               </div>

@@ -68,7 +68,7 @@ export default function OrdersPanel() {
         )}
       </section>
 
-      <aside className="h-fit bg-background p-6">
+      <aside className="h-fit rounded-xl bg-background p-6 shadow-sm">
         {!selected ? (
           <p className="text-sm text-muted-foreground">Selecione um pedido para ver os detalhes.</p>
         ) : (
