@@ -9,6 +9,7 @@ router.post('/', orderController.create);
 
 // Admin — gestão de pedidos
 router.get('/', authMiddleware, requireRole('admin', 'employee'), orderController.list);
+router.get('/stats/summary', authMiddleware, requireRole('admin', 'employee'), orderController.stats);
 router.get('/:id', authMiddleware, requireRole('admin', 'employee'), orderController.getById);
 router.patch(
   '/:id/status',

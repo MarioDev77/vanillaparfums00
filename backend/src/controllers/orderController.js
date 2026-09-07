@@ -219,4 +219,38 @@ async function updateStatus(req, res, next) {
   }
 }
 
-module.exports = { create, list, getById, updateStatus };
+// GET /admin/orders/stats/summary — faturamento, pedidos por status e top produtos
+async function stats(req, res, next) {
+  try {
+    const totals = await pool.query(
+      `SELECT COALESCE(SUM(total), 0) AS revenue, COUNT(*) AS orders_count
+       FROM orders WHERE status != 'cancelado'`
+    );
+
+    const byStatus = await pool.query(
+      `SELECT status, COUNT(*) AS count FROM orders GROUP BY status`
+    );
+
+    const topProducts = await pool.query(
+      `SELECT p.id, p.code, p.name, SUM(oi.quantity) AS total_quantity, SUM(oi.subtotal) AS total_revenue
+       FROM order_items oi
+       JOIN products p ON p.id = oi.product_id
+       JOIN orders o ON o.id = oi.order_id
+       WHERE o.status != 'cancelado'
+       GROUP BY p.id, p.code, p.name
+       ORDER BY total_quantity DESC
+       LIMIT 5`
+    );
+
+    return res.json({
+      revenue: totals.rows[0].revenue,
+      orders_count: Number(totals.rows[0].orders_count),
+      by_status: byStatus.rows,
+      top_products: topProducts.rows,
+    });
+  } catch (err) {
+    return next(err);
+  }
+}
+
+module.exports = { create, list, getById, updateStatus, stats };
