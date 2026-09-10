@@ -87,7 +87,7 @@ export default function Page() {
           <nav className={`${menuOpen ? 'flex' : 'hidden'} absolute left-0 top-[105px] z-20 w-full flex-col gap-5 border-b border-border bg-background px-5 py-6 text-xs uppercase tracking-[0.18em] lg:static lg:flex lg:w-auto lg:flex-row lg:items-center lg:gap-8 lg:border-0 lg:bg-transparent lg:p-0`}>
             <a href="#colecoes" className="group relative pb-1 transition-colors hover:text-primary">Coleções<span className="absolute inset-x-0 -bottom-[1px] h-px scale-x-0 bg-primary transition-transform duration-300 group-hover:scale-x-100" /></a>
             <a href="#mais-amados" className="group relative pb-1 transition-colors hover:text-primary">Mais amados<span className="absolute inset-x-0 -bottom-[1px] h-px scale-x-0 bg-primary transition-transform duration-300 group-hover:scale-x-100" /></a>
-            <a href="#ritual" className="group relative pb-1 transition-colors hover:text-primary">O ritual Contratipos<span className="absolute inset-x-0 -bottom-[1px] h-px scale-x-0 bg-primary transition-transform duration-300 group-hover:scale-x-100" /></a>
+            <a href="#ritual" className="group relative pb-1 transition-colors hover:text-primary">O que são contratipos<span className="absolute inset-x-0 -bottom-[1px] h-px scale-x-0 bg-primary transition-transform duration-300 group-hover:scale-x-100" /></a>
           </nav>
           <div className="flex items-center gap-4"><button aria-label="Buscar"><Search size={19} strokeWidth={1.5} /></button><a href={whatsappLink()} target="_blank" rel="noreferrer" aria-label="Comprar pelo WhatsApp" className="text-accent"><MessageCircle size={20} strokeWidth={1.5} /></a></div>
         </div>
@@ -126,14 +126,15 @@ export default function Page() {
 
       <section id="ritual" className="border-y border-border bg-primary text-primary-foreground">
         <div className="mx-auto grid max-w-7xl items-center gap-0 lg:grid-cols-2">
-          <div className="relative aspect-[4/3] overflow-hidden lg:aspect-auto lg:h-[560px]">
+          <div className="relative aspect-[4/3] overflow-hidden lg:aspect-auto lg:h-[640px]">
             <Image src="/hero-cremes.png" alt="Coleção Contratipos" fill className="object-cover" />
             <div className="absolute inset-0 bg-gradient-to-t from-primary/40 via-transparent to-transparent" />
           </div>
           <div className="px-6 py-16 sm:px-10 lg:px-16 lg:py-0">
-            <p className="mb-4 text-[10px] uppercase tracking-[0.36em] text-accent">O ritual Contratipos</p>
-            <h2 className="font-serif text-4xl leading-tight md:text-5xl">A mesma essência,<br />um preço justo.</h2>
-            <p className="mt-6 max-w-md text-sm leading-7 text-primary-foreground/75">Selecionamos as fragrâncias mais desejadas do mundo e recriamos cada uma com fidelidade — nas notas, na fixação e na projeção — para que você viva a mesma experiência olfativa por um valor justo.</p>
+            <p className="mb-4 text-[10px] uppercase tracking-[0.36em] text-accent">Entenda o conceito</p>
+            <h2 className="font-serif text-4xl leading-tight md:text-5xl">O que é um contratipo?</h2>
+            <p className="mt-6 max-w-md text-sm leading-7 text-primary-foreground/75">Um contratipo é uma releitura olfativa de um perfume de referência internacional. Nossos perfumistas estudam a composição original — as notas de saída, coração e fundo — e recriam a mesma essência com a maior fidelidade possível, sem usar o nome, o logotipo ou a embalagem da marca original.</p>
+            <p className="mt-4 max-w-md text-sm leading-7 text-primary-foreground/75">Não é imitação barata nem falsificação: é a mesma experiência sensorial, com boa fixação e projeção, oferecida por um preço muito mais justo — porque você paga pela fragrância, não pela grife.</p>
             <div className="mt-8 grid max-w-md grid-cols-3 gap-6 border-t border-primary-foreground/20 pt-6 text-center">
               <div><p className="font-serif text-2xl text-accent">36+</p><p className="mt-1 text-[10px] uppercase tracking-[0.14em] text-primary-foreground/60">Contratipos</p></div>
               <div><p className="font-serif text-2xl text-accent">100%</p><p className="mt-1 text-[10px] uppercase tracking-[0.14em] text-primary-foreground/60">Fidelidade olfativa</p></div>
