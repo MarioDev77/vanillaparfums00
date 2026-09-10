@@ -6,7 +6,9 @@ import Image from 'next/image'
 import { ArrowRight, ChevronLeft, ChevronRight, Heart, Menu, MessageCircle, Search, X } from 'lucide-react'
 import { backendImageUrl, fetchBackendProducts, type BackendProduct } from '@/lib/backend-api'
 
-const whatsappLink = (productName?: string) => `https://wa.me/?text=${encodeURIComponent(productName ? `Olá! Tenho interesse no contratipo ${productName}.` : 'Olá! Gostaria de conhecer os contratipos disponíveis.')}`
+// O número de WhatsApp não fica aqui: essa função só monta o link para a rota /api/whatsapp,
+// que roda no servidor e redireciona para o wa.me com o número (guardado em variável de ambiente).
+const whatsappLink = (productName?: string) => `/api/whatsapp?text=${encodeURIComponent(productName ? `Olá! Tenho interesse no contratipo ${productName}.` : 'Olá! Gostaria de conhecer os contratipos disponíveis.')}`
 
 type CatalogProduct = {
   name: string
