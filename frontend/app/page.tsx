@@ -215,6 +215,15 @@ export default function Page() {
         </div>
       </section>
 
+      <section aria-label="Instagram" className="mx-auto max-w-7xl px-5 py-20 text-center lg:px-10">
+        <p className="mb-3 text-[10px] uppercase tracking-[0.3em] text-muted-foreground">Redes sociais</p>
+        <h2 className="font-serif text-3xl md:text-4xl">Conheça a Vanilla</h2>
+        <div className="mx-auto mt-10 flex max-w-md flex-col items-center gap-4 border border-dashed border-accent/50 bg-accent/5 px-6 py-10">
+          <p className="text-sm italic text-muted-foreground">[Espaço reservado para integração com o Instagram da Vanilla Parfums]</p>
+          <p className="text-xs text-muted-foreground">Assim que o perfil for cadastrado, as publicações reais aparecem aqui.</p>
+        </div>
+      </section>
+
       <section className="bg-primary px-5 py-20 text-center text-primary-foreground lg:py-28"><p className="text-[10px] uppercase tracking-[0.3em] text-accent">Receba novidades Vanilla</p><h2 className="mt-4 font-serif text-3xl md:text-4xl">Uma essência especial está a caminho.</h2><div className="mx-auto mt-9 flex max-w-md border-b border-primary-foreground/30 transition-colors focus-within:border-accent"><input aria-label="Seu melhor e-mail" type="email" placeholder="Seu melhor e-mail" className="min-w-0 flex-1 bg-transparent px-1 py-3 text-sm outline-none placeholder:text-primary-foreground/50" /><button className="px-1 text-[10px] uppercase tracking-[0.18em] text-accent">Assinar</button></div></section>
 
       <section className="mx-auto max-w-3xl px-5 py-24 text-center lg:px-10">

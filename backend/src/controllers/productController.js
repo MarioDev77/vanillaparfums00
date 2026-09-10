@@ -78,6 +78,7 @@ async function create(req, res, next) {
     const {
       code, name, category_id, olfactory_family, description,
       top_notes, heart_notes, base_notes, fixation, projection,
+      occasion, intensity,
       size_ml, price, cost, stock_quantity, min_stock, status,
       featured, best_seller, image_url,
     } = req.body;
@@ -90,13 +91,15 @@ async function create(req, res, next) {
       `INSERT INTO products (
         code, name, category_id, olfactory_family, description,
         top_notes, heart_notes, base_notes, fixation, projection,
+        occasion, intensity,
         size_ml, price, cost, stock_quantity, min_stock, status,
         featured, best_seller, image_url
-      ) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19)
+      ) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21)
       RETURNING *`,
       [
         code, name, category_id || null, olfactory_family, description,
         top_notes, heart_notes, base_notes, fixation, projection,
+        occasion || null, intensity || null,
         size_ml || 50, price, cost || 0, stock_quantity || 0, min_stock || 5,
         status || 'available', featured || false, best_seller || false, image_url,
       ]
@@ -120,6 +123,7 @@ async function update(req, res, next) {
     const allowed = [
       'code', 'name', 'category_id', 'olfactory_family', 'description',
       'top_notes', 'heart_notes', 'base_notes', 'fixation', 'projection',
+      'occasion', 'intensity',
       'size_ml', 'price', 'cost', 'min_stock', 'status', 'featured',
       'best_seller', 'image_url',
     ];

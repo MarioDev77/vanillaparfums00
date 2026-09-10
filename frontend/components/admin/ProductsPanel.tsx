@@ -7,6 +7,7 @@ import { Category, Product, formatMoney, parseBrNumber } from './types'
 const empty = {
   code: '', name: '', category_id: '', olfactory_family: '', description: '',
   top_notes: '', heart_notes: '', base_notes: '', fixation: '', projection: '',
+  occasion: '', intensity: '',
   size_ml: '50', price: '', cost: '', min_stock: '5', status: 'available',
   featured: false, best_seller: false, image_url: '',
 }
@@ -44,6 +45,7 @@ export default function ProductsPanel() {
       olfactory_family: product.olfactory_family ?? '', description: product.description ?? '',
       top_notes: product.top_notes ?? '', heart_notes: product.heart_notes ?? '', base_notes: product.base_notes ?? '',
       fixation: product.fixation ?? '', projection: product.projection ?? '', size_ml: String(product.size_ml ?? '50'),
+      occasion: product.occasion ?? '', intensity: product.intensity ?? '',
       price: String(product.price ?? '').replace('.', ','), cost: String(product.cost ?? '').replace('.', ','),
       min_stock: String(product.min_stock ?? '5'), status: product.status,
       featured: !!product.featured, best_seller: !!product.best_seller, image_url: product.image_url ?? '',
@@ -168,6 +170,19 @@ export default function ProductsPanel() {
 
           <label className={labelClass}>Notas de fundo
             <input value={form.base_notes} onChange={(e) => setForm({ ...form, base_notes: e.target.value })} className={inputClass} />
+          </label>
+
+          <label className={labelClass}>Ocasião
+            <input value={form.occasion} onChange={(e) => setForm({ ...form, occasion: e.target.value })} placeholder="Dia, Trabalho, Encontro..." className={inputClass} />
+          </label>
+
+          <label className={labelClass}>Intensidade
+            <select value={form.intensity} onChange={(e) => setForm({ ...form, intensity: e.target.value })} className={inputClass}>
+              <option value="">Não definida</option>
+              <option value="leve">Leve</option>
+              <option value="moderada">Moderada</option>
+              <option value="intensa">Intensa</option>
+            </select>
           </label>
 
           <label className={labelClass}>Tamanho (ml)

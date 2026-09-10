@@ -19,6 +19,8 @@ export type Product = {
   base_notes?: string
   fixation?: string
   projection?: string
+  occasion?: string
+  intensity?: 'leve' | 'moderada' | 'intensa'
   size_ml?: number
   price: string | number
   cost?: string | number

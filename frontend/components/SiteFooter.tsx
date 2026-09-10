@@ -12,6 +12,7 @@ export default function SiteFooter() {
             <a href="/catalogo" className="hover:text-accent">Catálogo</a>
             <a href="/contratipos" className="hover:text-accent">Contratipos</a>
             <a href="/encontre-seu-perfume" className="hover:text-accent">Encontre seu perfume</a>
+            <a href="/sobre" className="hover:text-accent">Sobre nós</a>
             <a href="/" className="hover:text-accent">Início</a>
           </nav>
         </div>

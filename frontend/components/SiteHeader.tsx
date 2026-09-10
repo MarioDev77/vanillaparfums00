@@ -24,6 +24,7 @@ export default function SiteHeader() {
             <a href="/#colecoes" className="transition-colors hover:text-primary">Coleções</a>
             <a href="/contratipos" className="transition-colors hover:text-primary">O que são contratipos</a>
             <a href="/encontre-seu-perfume" className="transition-colors hover:text-primary">Encontre seu perfume</a>
+            <a href="/sobre" className="transition-colors hover:text-primary">Sobre nós</a>
           </nav>
           <div className="flex items-center gap-4">
             <a href="/catalogo" aria-label="Buscar no catálogo"><Search size={19} strokeWidth={1.5} /></a>
