@@ -22,7 +22,11 @@ type CatalogProduct = {
   featured?: boolean
   best_seller?: boolean
   tabLabel?: string
+  id?: number
 }
+
+const FAVORITES_KEY = 'vanilla-parfums:favoritos'
+const favKey = (product: CatalogProduct) => String(product.id ?? product.name)
 
 const slides = [
   { image: '/hero-feminino-goodgirl.png', eyebrow: 'Coleção feminina', title: 'A sua essência\ncomeça aqui.', text: 'Fragrâncias que traduzem presença, delicadeza e personalidade.', cta: 'Descobrir femininos' },
@@ -53,6 +57,26 @@ export default function Page() {
   const [menuOpen, setMenuOpen] = useState(false)
   const [selected, setSelected] = useState<CatalogProduct | null>(null)
   const [search, setSearch] = useState('')
+  const [favorites, setFavorites] = useState<Set<string>>(new Set())
+  const [showFavoritesOnly, setShowFavoritesOnly] = useState(false)
+
+  useEffect(() => {
+    try {
+      const stored = window.localStorage.getItem(FAVORITES_KEY)
+      if (stored) setFavorites(new Set(JSON.parse(stored)))
+    } catch {}
+  }, [])
+
+  function toggleFavorite(product: CatalogProduct) {
+    setFavorites((current) => {
+      const next = new Set(current)
+      const key = favKey(product)
+      if (next.has(key)) next.delete(key)
+      else next.add(key)
+      try { window.localStorage.setItem(FAVORITES_KEY, JSON.stringify([...next])) } catch {}
+      return next
+    })
+  }
   const { data: backendProducts } = useSWR<BackendProduct[]>('catalog-products', fetchBackendProducts, { revalidateOnFocus: false })
   const current = slides[slide]
   const catalogTabs = useMemo(() => {
@@ -66,6 +90,7 @@ export default function Page() {
       label: group.label,
       key: group.key,
       products: backendProducts.filter(group.match).map((product): CatalogProduct => ({
+        id: product.id,
         name: product.name,
         note: product.olfactory_family || [product.top_notes, product.heart_notes, product.base_notes].filter(Boolean).join(' · ') || product.description || 'Fragrância contratipo',
         price: `R$ ${Number(product.price).toFixed(2).replace('.', ',')}`,
@@ -98,15 +123,24 @@ export default function Page() {
 
   const isSearching = search.trim().length > 0
 
+  const allProducts = useMemo(
+    () => catalogTabs.flatMap((tab) => tab.products.map((product) => ({ ...product, tabLabel: tab.label }))),
+    [catalogTabs]
+  )
+
   const visibleProducts = useMemo(() => {
     const term = search.trim().toLowerCase()
-    if (!term) return catalogTabs[activeTab]?.products ?? []
-    // Com um termo digitado, a busca passa a valer para o catálogo inteiro (todas as abas), não só a aba selecionada
-    const allProducts = catalogTabs.flatMap((tab) => tab.products.map((product) => ({ ...product, tabLabel: tab.label })))
-    return allProducts.filter((product) => [product.name, product.note, product.olfactory_family, product.description]
-      .filter(Boolean)
-      .some((field) => field!.toLowerCase().includes(term)))
-  }, [catalogTabs, activeTab, search])
+    // Favoritos e busca sempre olham o catálogo inteiro; sem eles, mostra só a aba selecionada
+    let base = showFavoritesOnly ? allProducts.filter((product) => favorites.has(favKey(product)))
+      : term ? allProducts
+      : catalogTabs[activeTab]?.products ?? []
+    if (term) {
+      base = base.filter((product) => [product.name, product.note, product.olfactory_family, product.description]
+        .filter(Boolean)
+        .some((field) => field!.toLowerCase().includes(term)))
+    }
+    return base
+  }, [catalogTabs, allProducts, activeTab, search, showFavoritesOnly, favorites])
 
   return (
     <main className="min-h-screen bg-background text-foreground">
@@ -119,7 +153,14 @@ export default function Page() {
             <a href="#mais-amados" className="group relative pb-1 transition-colors hover:text-primary">Mais amados<span className="absolute inset-x-0 -bottom-[1px] h-px scale-x-0 bg-primary transition-transform duration-300 group-hover:scale-x-100" /></a>
             <a href="#ritual" className="group relative pb-1 transition-colors hover:text-primary">O que são contratipos<span className="absolute inset-x-0 -bottom-[1px] h-px scale-x-0 bg-primary transition-transform duration-300 group-hover:scale-x-100" /></a>
           </nav>
-          <div className="flex items-center gap-4"><button aria-label="Buscar"><Search size={19} strokeWidth={1.5} /></button><a href={whatsappLink()} target="_blank" rel="noreferrer" aria-label="Comprar pelo WhatsApp" className="text-accent"><MessageCircle size={20} strokeWidth={1.5} /></a></div>
+          <div className="flex items-center gap-4">
+            <button aria-label="Buscar"><Search size={19} strokeWidth={1.5} /></button>
+            <a href="#colecoes" aria-label="Ver favoritos" onClick={() => setShowFavoritesOnly(true)} className="relative">
+              <Heart size={19} strokeWidth={1.5} fill={favorites.size > 0 ? 'currentColor' : 'none'} />
+              {favorites.size > 0 && <span className="absolute -right-2 -top-2 flex h-4 min-w-4 items-center justify-center rounded-full bg-accent px-1 text-[9px] text-accent-foreground">{favorites.size}</span>}
+            </a>
+            <a href={whatsappLink()} target="_blank" rel="noreferrer" aria-label="Comprar pelo WhatsApp" className="text-accent"><MessageCircle size={20} strokeWidth={1.5} /></a>
+          </div>
         </div>
       </header>
 
@@ -133,19 +174,29 @@ export default function Page() {
       <section id="colecoes" className="mx-auto max-w-7xl px-5 py-24 lg:px-10 lg:py-32">
         <div className="mb-14 flex flex-col justify-between gap-5 md:flex-row md:items-end"><div><p className="mb-3 text-[10px] uppercase tracking-[0.3em] text-muted-foreground">Encontre a sua assinatura</p><h2 className="font-serif text-4xl md:text-5xl">Escolha por essência</h2></div><p className="max-w-xs text-sm leading-6 text-muted-foreground">Descubra fragrâncias e cuidados pensados para fazer parte da sua história.</p></div>
         <div className="mb-10 flex flex-col gap-6 border-b border-border pb-0 sm:flex-row sm:items-end sm:justify-between">
-          <div className="flex gap-9 overflow-x-auto"><div className="flex min-w-max gap-9">{catalogTabs.map((tab, index) => <button key={tab.key} onClick={() => setActiveTab(index)} className={`relative pb-4 text-xs uppercase tracking-[0.16em] transition-colors ${activeTab === index ? 'text-primary' : 'text-muted-foreground hover:text-foreground'}`}>{tab.label}{activeTab === index && <span className="absolute inset-x-0 -bottom-px h-px bg-primary" />}</button>)}</div></div>
+          <div className="flex gap-9 overflow-x-auto"><div className="flex min-w-max gap-9">{catalogTabs.map((tab, index) => <button key={tab.key} onClick={() => { setActiveTab(index); setShowFavoritesOnly(false) }} className={`relative pb-4 text-xs uppercase tracking-[0.16em] transition-colors ${!showFavoritesOnly && activeTab === index ? 'text-primary' : 'text-muted-foreground hover:text-foreground'}`}>{tab.label}{!showFavoritesOnly && activeTab === index && <span className="absolute inset-x-0 -bottom-px h-px bg-primary" />}</button>)}</div></div>
           <label className="relative flex items-center pb-4 sm:w-64">
             <Search size={15} strokeWidth={1.5} className="pointer-events-none absolute left-0 text-muted-foreground" />
-            <input value={search} onChange={(e) => setSearch(e.target.value)} type="text" placeholder="Buscar em todo o catálogo" className="w-full border-b border-border bg-transparent py-1 pl-6 text-sm outline-none transition-colors placeholder:text-muted-foreground focus:border-primary" />
+            <input value={search} onChange={(e) => { setSearch(e.target.value); setShowFavoritesOnly(false) }} type="text" placeholder="Buscar em todo o catálogo" className="w-full border-b border-border bg-transparent py-1 pl-6 text-sm outline-none transition-colors placeholder:text-muted-foreground focus:border-primary" />
           </label>
         </div>
-        {isSearching && (
+        {showFavoritesOnly && (
+          <div className="mb-6 flex items-center justify-between">
+            <p className="text-xs uppercase tracking-[0.16em] text-muted-foreground">
+              {visibleProducts.length} favorito{visibleProducts.length === 1 ? '' : 's'}
+            </p>
+            <button onClick={() => setShowFavoritesOnly(false)} className="text-xs uppercase tracking-[0.16em] text-accent-foreground underline underline-offset-4">Ver catálogo completo</button>
+          </div>
+        )}
+        {!showFavoritesOnly && isSearching && (
           <p className="mb-6 text-xs uppercase tracking-[0.16em] text-muted-foreground">
             {visibleProducts.length} resultado{visibleProducts.length === 1 ? '' : 's'} para "{search}" em todo o catálogo
           </p>
         )}
         {visibleProducts.length === 0 ? (
-          <p className="py-16 text-center text-sm text-muted-foreground">Nenhum contratipo encontrado para "{search}".</p>
+          <p className="py-16 text-center text-sm text-muted-foreground">
+            {showFavoritesOnly ? 'Você ainda não favoritou nenhum contratipo.' : `Nenhum contratipo encontrado para "${search}".`}
+          </p>
         ) : (
         <div className="grid grid-cols-2 gap-x-4 gap-y-12 sm:grid-cols-3 sm:gap-x-8 sm:gap-y-16 lg:grid-cols-4">
           {visibleProducts.map((product, index) => (
@@ -153,18 +204,24 @@ export default function Page() {
               <div className="relative aspect-[4/5] overflow-hidden bg-secondary">
                 <Image src={product.image} alt={product.name} fill className="object-cover transition-transform duration-700 ease-out group-hover:scale-[1.03]" />
                 <span className="absolute left-4 top-4 font-serif text-xs text-primary-foreground/80 mix-blend-difference">{String(index + 1).padStart(2, '0')}</span>
-                <button aria-label={`Favoritar ${product.name}`} onClick={(e) => e.stopPropagation()} className="absolute right-4 top-4 text-primary-foreground opacity-0 mix-blend-difference transition-opacity duration-300 group-hover:opacity-100"><Heart size={17} strokeWidth={1.5} /></button>
+                <button
+                  aria-label={favorites.has(favKey(product)) ? `Remover ${product.name} dos favoritos` : `Favoritar ${product.name}`}
+                  onClick={(e) => { e.stopPropagation(); toggleFavorite(product) }}
+                  className={`absolute right-4 top-4 text-primary-foreground mix-blend-difference transition-opacity duration-300 ${favorites.has(favKey(product)) ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'}`}
+                >
+                  <Heart size={17} strokeWidth={1.5} fill={favorites.has(favKey(product)) ? 'currentColor' : 'none'} />
+                </button>
                 <div className="absolute inset-x-0 bottom-0 flex translate-y-2 items-center justify-between gap-2 bg-gradient-to-t from-black/55 to-transparent px-4 py-4 opacity-0 transition-all duration-300 group-hover:translate-y-0 group-hover:opacity-100">
                   <span className="text-[10px] uppercase tracking-[0.18em] text-white">Ver detalhes</span>
                   <a href={whatsappLink(product.name)} target="_blank" rel="noreferrer" onClick={(e) => e.stopPropagation()} className="flex items-center gap-1.5 text-[10px] uppercase tracking-[0.18em] text-white underline underline-offset-4"><MessageCircle size={13} /> Comprar</a>
                 </div>
               </div>
               <div className="mt-5 border-t border-border pt-4">
-                {(product.best_seller || product.featured || (isSearching && product.tabLabel)) && (
+                {(product.best_seller || product.featured || ((isSearching || showFavoritesOnly) && product.tabLabel)) && (
                   <div className="mb-2 flex flex-wrap gap-2">
                     {product.best_seller && <span className="bg-accent px-2 py-0.5 text-[9px] uppercase tracking-[0.14em] text-accent-foreground">Mais vendido</span>}
                     {product.featured && <span className="border border-accent px-2 py-0.5 text-[9px] uppercase tracking-[0.14em] text-accent-foreground">Destaque</span>}
-                    {isSearching && product.tabLabel && <span className="border border-border px-2 py-0.5 text-[9px] uppercase tracking-[0.14em] text-muted-foreground">{product.tabLabel}</span>}
+                    {(isSearching || showFavoritesOnly) && product.tabLabel && <span className="border border-border px-2 py-0.5 text-[9px] uppercase tracking-[0.14em] text-muted-foreground">{product.tabLabel}</span>}
                   </div>
                 )}
                 <div className="flex items-start justify-between gap-3">

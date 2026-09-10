@@ -7,6 +7,7 @@ import StockPanel from '@/components/admin/StockPanel'
 import OrdersPanel from '@/components/admin/OrdersPanel'
 import CategoriesPanel from '@/components/admin/CategoriesPanel'
 import DashboardPanel from '@/components/admin/DashboardPanel'
+import CouponsPanel from '@/components/admin/CouponsPanel'
 
 const TABS = [
   { id: 'dashboard', label: 'Dashboard' },
@@ -14,6 +15,7 @@ const TABS = [
   { id: 'stock', label: 'Estoque' },
   { id: 'orders', label: 'Pedidos' },
   { id: 'categories', label: 'Categorias' },
+  { id: 'coupons', label: 'Cupons' },
 ] as const
 
 type Tab = (typeof TABS)[number]['id']
@@ -59,6 +61,7 @@ export default function AdminDashboard({ userName }: { userName: string }) {
         {tab === 'stock' && <StockPanel />}
         {tab === 'orders' && <OrdersPanel />}
         {tab === 'categories' && <CategoriesPanel />}
+        {tab === 'coupons' && <CouponsPanel />}
       </div>
     </main>
   )

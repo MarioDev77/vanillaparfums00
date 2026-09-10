@@ -43,6 +43,19 @@ export type DashboardStats = {
   }[]
 }
 
+export type Coupon = {
+  id: number
+  code: string
+  discount_type: 'percentage' | 'fixed'
+  discount_value: string | number
+  valid_from?: string | null
+  valid_until?: string | null
+  max_uses?: number | null
+  used_count: number
+  active: boolean
+  created_at: string
+}
+
 export type StockOverview = {
   products: Product[]
   low_stock: Product[]
