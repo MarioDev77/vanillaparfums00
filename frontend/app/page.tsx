@@ -21,6 +21,7 @@ type CatalogProduct = {
   category_name?: string
   featured?: boolean
   best_seller?: boolean
+  tabLabel?: string
 }
 
 const slides = [
@@ -40,6 +41,10 @@ const tabs: { label: string; key: string; products: CatalogProduct[] }[] = [
     { name: 'Élan', note: 'Bergamota · Cedro · Musk', price: 'R$ 179,90', image: 'https://images.unsplash.com/photo-1592945403244-b3fbafd7f539?auto=format&fit=crop&w=700&q=85', description: 'Fragrância contratipo inspirada em grandes clássicos internacionais.' },
     { name: 'The One', note: 'Mandarina · Âmbar · Patchouli', price: 'R$ 189,90', image: 'https://images.unsplash.com/photo-1557170334-a9632e77c6e4?auto=format&fit=crop&w=700&q=85', description: 'Fragrância contratipo inspirada em grandes clássicos internacionais.' },
   ]},
+  { label: 'Unissex & cuidados', key: 'unissex', products: [
+    { name: 'Creme Hidratante Vanilla', note: 'Baunilha · Manteiga de karité', price: 'R$ 89,90', image: 'https://images.unsplash.com/photo-1601049541289-9b1b7bbbfe19?auto=format&fit=crop&w=700&q=85', description: 'Textura envolvente que prolonga a fixação do seu perfume favorito.' },
+    { name: 'Essência Unissex Wood', note: 'Cedro · Âmbar · Musk branco', price: 'R$ 179,90', image: 'https://images.unsplash.com/photo-1547887538-e3a2f32cb1cc?auto=format&fit=crop&w=700&q=85', description: 'Fragrância contratipo inspirada em grandes clássicos internacionais.' },
+  ]},
 ]
 
 export default function Page() {
@@ -55,11 +60,12 @@ export default function Page() {
     const groups = [
       { label: 'Perfumes femininos', key: 'femininos', match: (product: BackendProduct) => product.category_gender === 'feminino' },
       { label: 'Perfumes masculinos', key: 'masculinos', match: (product: BackendProduct) => product.category_gender === 'masculino' },
+      { label: 'Unissex & cuidados', key: 'unissex', match: (product: BackendProduct) => product.category_gender === 'unissex' },
     ]
-    return groups.map((group) => ({
+    const mapped = groups.map((group) => ({
       label: group.label,
       key: group.key,
-      products: backendProducts.filter(group.match).map((product) => ({
+      products: backendProducts.filter(group.match).map((product): CatalogProduct => ({
         name: product.name,
         note: product.olfactory_family || [product.top_notes, product.heart_notes, product.base_notes].filter(Boolean).join(' · ') || product.description || 'Fragrância contratipo',
         price: `R$ ${Number(product.price).toFixed(2).replace('.', ',')}`,
@@ -74,7 +80,14 @@ export default function Page() {
         best_seller: product.best_seller,
       })),
     }))
+    // Evita mostrar uma aba (ex.: "Unissex & cuidados") vazia enquanto não houver produtos cadastrados nela
+    const nonEmpty = mapped.filter((group) => group.products.length > 0)
+    return nonEmpty.length > 0 ? nonEmpty : mapped
   }, [backendProducts])
+
+  useEffect(() => {
+    if (activeTab > catalogTabs.length - 1) setActiveTab(0)
+  }, [catalogTabs, activeTab])
 
   useEffect(() => {
     const timer = setInterval(() => setSlide((value) => (value + 1) % slides.length), 6000)
@@ -83,11 +96,14 @@ export default function Page() {
 
   const hasDetails = selected && (selected.description || selected.top_notes || selected.heart_notes || selected.base_notes)
 
+  const isSearching = search.trim().length > 0
+
   const visibleProducts = useMemo(() => {
-    const list = catalogTabs[activeTab]?.products ?? []
     const term = search.trim().toLowerCase()
-    if (!term) return list
-    return list.filter((product) => [product.name, product.note, product.olfactory_family, product.description]
+    if (!term) return catalogTabs[activeTab]?.products ?? []
+    // Com um termo digitado, a busca passa a valer para o catálogo inteiro (todas as abas), não só a aba selecionada
+    const allProducts = catalogTabs.flatMap((tab) => tab.products.map((product) => ({ ...product, tabLabel: tab.label })))
+    return allProducts.filter((product) => [product.name, product.note, product.olfactory_family, product.description]
       .filter(Boolean)
       .some((field) => field!.toLowerCase().includes(term)))
   }, [catalogTabs, activeTab, search])
@@ -120,15 +136,20 @@ export default function Page() {
           <div className="flex gap-9 overflow-x-auto"><div className="flex min-w-max gap-9">{catalogTabs.map((tab, index) => <button key={tab.key} onClick={() => setActiveTab(index)} className={`relative pb-4 text-xs uppercase tracking-[0.16em] transition-colors ${activeTab === index ? 'text-primary' : 'text-muted-foreground hover:text-foreground'}`}>{tab.label}{activeTab === index && <span className="absolute inset-x-0 -bottom-px h-px bg-primary" />}</button>)}</div></div>
           <label className="relative flex items-center pb-4 sm:w-64">
             <Search size={15} strokeWidth={1.5} className="pointer-events-none absolute left-0 text-muted-foreground" />
-            <input value={search} onChange={(e) => setSearch(e.target.value)} type="text" placeholder="Buscar por nome ou essência" className="w-full border-b border-border bg-transparent py-1 pl-6 text-sm outline-none transition-colors placeholder:text-muted-foreground focus:border-primary" />
+            <input value={search} onChange={(e) => setSearch(e.target.value)} type="text" placeholder="Buscar em todo o catálogo" className="w-full border-b border-border bg-transparent py-1 pl-6 text-sm outline-none transition-colors placeholder:text-muted-foreground focus:border-primary" />
           </label>
         </div>
+        {isSearching && (
+          <p className="mb-6 text-xs uppercase tracking-[0.16em] text-muted-foreground">
+            {visibleProducts.length} resultado{visibleProducts.length === 1 ? '' : 's'} para "{search}" em todo o catálogo
+          </p>
+        )}
         {visibleProducts.length === 0 ? (
           <p className="py-16 text-center text-sm text-muted-foreground">Nenhum contratipo encontrado para "{search}".</p>
         ) : (
         <div className="grid grid-cols-2 gap-x-4 gap-y-12 sm:grid-cols-3 sm:gap-x-8 sm:gap-y-16 lg:grid-cols-4">
           {visibleProducts.map((product, index) => (
-            <article key={product.name} className="group cursor-pointer" onClick={() => setSelected(product)}>
+            <article key={`${product.tabLabel ?? ''}-${product.name}`} className="group cursor-pointer" onClick={() => setSelected(product)}>
               <div className="relative aspect-[4/5] overflow-hidden bg-secondary">
                 <Image src={product.image} alt={product.name} fill className="object-cover transition-transform duration-700 ease-out group-hover:scale-[1.03]" />
                 <span className="absolute left-4 top-4 font-serif text-xs text-primary-foreground/80 mix-blend-difference">{String(index + 1).padStart(2, '0')}</span>
@@ -139,10 +160,11 @@ export default function Page() {
                 </div>
               </div>
               <div className="mt-5 border-t border-border pt-4">
-                {(product.best_seller || product.featured) && (
+                {(product.best_seller || product.featured || (isSearching && product.tabLabel)) && (
                   <div className="mb-2 flex flex-wrap gap-2">
                     {product.best_seller && <span className="bg-accent px-2 py-0.5 text-[9px] uppercase tracking-[0.14em] text-accent-foreground">Mais vendido</span>}
                     {product.featured && <span className="border border-accent px-2 py-0.5 text-[9px] uppercase tracking-[0.14em] text-accent-foreground">Destaque</span>}
+                    {isSearching && product.tabLabel && <span className="border border-border px-2 py-0.5 text-[9px] uppercase tracking-[0.14em] text-muted-foreground">{product.tabLabel}</span>}
                   </div>
                 )}
                 <div className="flex items-start justify-between gap-3">

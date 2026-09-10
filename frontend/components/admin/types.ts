@@ -30,6 +30,19 @@ export type Product = {
   image_url?: string
 }
 
+export type DashboardStats = {
+  revenue: string | number
+  orders_count: number
+  by_status: { status: OrderStatus; count: string | number }[]
+  top_products: {
+    id: number
+    code: string
+    name: string
+    total_quantity: string | number
+    total_revenue: string | number
+  }[]
+}
+
 export type StockOverview = {
   products: Product[]
   low_stock: Product[]
