@@ -179,6 +179,10 @@ export default function Page() {
       <section className="bg-primary px-5 py-20 text-center text-primary-foreground lg:py-28"><p className="text-[10px] uppercase tracking-[0.3em] text-accent">Receba novidades Vanilla</p><h2 className="mt-4 font-serif text-3xl md:text-4xl">Uma essência especial está a caminho.</h2><div className="mx-auto mt-9 flex max-w-md border-b border-primary-foreground/30 transition-colors focus-within:border-accent"><input aria-label="Seu melhor e-mail" type="email" placeholder="Seu melhor e-mail" className="min-w-0 flex-1 bg-transparent px-1 py-3 text-sm outline-none placeholder:text-primary-foreground/50" /><button className="px-1 text-[10px] uppercase tracking-[0.18em] text-accent">Assinar</button></div></section>
       <footer className="mx-auto flex max-w-7xl flex-col gap-5 px-5 py-10 text-[10px] uppercase tracking-[0.16em] text-muted-foreground sm:flex-row sm:items-center sm:justify-between lg:px-10"><span>© 2026 Contratipos</span><span>A mesma essência. Um preço justo.</span><a href={whatsappLink()} target="_blank" rel="noreferrer" className="inline-flex items-center gap-2 text-accent-foreground/80 transition-colors hover:text-primary"><MessageCircle size={14} /> Comprar pelo WhatsApp</a></footer>
 
+      <a href={whatsappLink()} target="_blank" rel="noreferrer" aria-label="Falar no WhatsApp" className="fixed bottom-6 right-6 z-40 flex h-14 w-14 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-lg shadow-black/20 transition hover:opacity-90">
+        <MessageCircle size={24} strokeWidth={1.5} />
+      </a>
+
       {selected && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 px-4 py-8" onClick={() => setSelected(null)}>
           <div className="relative grid max-h-full w-full max-w-4xl grid-cols-1 overflow-y-auto bg-background sm:grid-cols-[1.1fr_1fr]" onClick={(e) => e.stopPropagation()}>
