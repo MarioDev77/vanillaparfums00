@@ -3,6 +3,7 @@ import type { Metadata, Viewport } from 'next'
 import { Geist, Playfair_Display } from 'next/font/google'
 import { CartProvider } from '@/lib/cart-context'
 import { FavoritesProvider } from '@/lib/favorites-context'
+import IntroAnimation from '@/components/IntroAnimation'
 import './globals.css'
 
 const geist = Geist({ subsets: ['latin'], variable: '--font-geist' })
@@ -21,5 +22,5 @@ export const viewport: Viewport = {
 }
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
-  return <html lang="pt-BR" className="bg-background"><body className={`${geist.variable} ${playfair.variable} font-sans`}><FavoritesProvider><CartProvider>{children}</CartProvider></FavoritesProvider>{process.env.NODE_ENV === 'production' && <Analytics />}</body></html>
+  return <html lang="pt-BR" className="bg-background"><body className={`${geist.variable} ${playfair.variable} font-sans`}><IntroAnimation /><FavoritesProvider><CartProvider>{children}</CartProvider></FavoritesProvider>{process.env.NODE_ENV === 'production' && <Analytics />}</body></html>
 }
