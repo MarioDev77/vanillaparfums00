@@ -11,6 +11,9 @@ export type BackendProduct = {
   heart_notes?: string
   base_notes?: string
   olfactory_family?: string
+  fixation?: string
+  projection?: string
+  size_ml?: number
   category_gender?: 'masculino' | 'feminino' | 'unissex'
   category_name?: string
   status?: string
@@ -21,6 +24,13 @@ export type BackendProduct = {
 export async function fetchBackendProducts(): Promise<BackendProduct[]> {
   const response = await fetch(`${API_URL}/products?available_only=true`)
   if (!response.ok) throw new Error('Não foi possível carregar o catálogo.')
+  return response.json()
+}
+
+export async function fetchBackendProductByCode(code: string): Promise<BackendProduct | null> {
+  const response = await fetch(`${API_URL}/products/${encodeURIComponent(code)}`)
+  if (response.status === 404) return null
+  if (!response.ok) throw new Error('Não foi possível carregar o produto.')
   return response.json()
 }
 
