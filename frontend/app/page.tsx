@@ -19,6 +19,8 @@ type CatalogProduct = {
   base_notes?: string
   olfactory_family?: string
   category_name?: string
+  featured?: boolean
+  best_seller?: boolean
 }
 
 const slides = [
@@ -45,6 +47,7 @@ export default function Page() {
   const [activeTab, setActiveTab] = useState(1)
   const [menuOpen, setMenuOpen] = useState(false)
   const [selected, setSelected] = useState<CatalogProduct | null>(null)
+  const [search, setSearch] = useState('')
   const { data: backendProducts } = useSWR<BackendProduct[]>('catalog-products', fetchBackendProducts, { revalidateOnFocus: false })
   const current = slides[slide]
   const catalogTabs = useMemo(() => {
@@ -67,6 +70,8 @@ export default function Page() {
         base_notes: product.base_notes,
         olfactory_family: product.olfactory_family,
         category_name: product.category_name,
+        featured: product.featured,
+        best_seller: product.best_seller,
       })),
     }))
   }, [backendProducts])
@@ -77,6 +82,15 @@ export default function Page() {
   }, [])
 
   const hasDetails = selected && (selected.description || selected.top_notes || selected.heart_notes || selected.base_notes)
+
+  const visibleProducts = useMemo(() => {
+    const list = catalogTabs[activeTab]?.products ?? []
+    const term = search.trim().toLowerCase()
+    if (!term) return list
+    return list.filter((product) => [product.name, product.note, product.olfactory_family, product.description]
+      .filter(Boolean)
+      .some((field) => field!.toLowerCase().includes(term)))
+  }, [catalogTabs, activeTab, search])
 
   return (
     <main className="min-h-screen bg-background text-foreground">
@@ -102,9 +116,18 @@ export default function Page() {
 
       <section id="colecoes" className="mx-auto max-w-7xl px-5 py-24 lg:px-10 lg:py-32">
         <div className="mb-14 flex flex-col justify-between gap-5 md:flex-row md:items-end"><div><p className="mb-3 text-[10px] uppercase tracking-[0.3em] text-muted-foreground">Encontre a sua assinatura</p><h2 className="font-serif text-4xl md:text-5xl">Escolha por essência</h2></div><p className="max-w-xs text-sm leading-6 text-muted-foreground">Descubra fragrâncias e cuidados pensados para fazer parte da sua história.</p></div>
-        <div className="mb-14 flex gap-9 overflow-x-auto border-b border-border"><div className="flex min-w-max gap-9">{catalogTabs.map((tab, index) => <button key={tab.key} onClick={() => setActiveTab(index)} className={`relative pb-4 text-xs uppercase tracking-[0.16em] transition-colors ${activeTab === index ? 'text-primary' : 'text-muted-foreground hover:text-foreground'}`}>{tab.label}{activeTab === index && <span className="absolute inset-x-0 -bottom-px h-px bg-primary" />}</button>)}</div></div>
+        <div className="mb-10 flex flex-col gap-6 border-b border-border pb-0 sm:flex-row sm:items-end sm:justify-between">
+          <div className="flex gap-9 overflow-x-auto"><div className="flex min-w-max gap-9">{catalogTabs.map((tab, index) => <button key={tab.key} onClick={() => setActiveTab(index)} className={`relative pb-4 text-xs uppercase tracking-[0.16em] transition-colors ${activeTab === index ? 'text-primary' : 'text-muted-foreground hover:text-foreground'}`}>{tab.label}{activeTab === index && <span className="absolute inset-x-0 -bottom-px h-px bg-primary" />}</button>)}</div></div>
+          <label className="relative flex items-center pb-4 sm:w-64">
+            <Search size={15} strokeWidth={1.5} className="pointer-events-none absolute left-0 text-muted-foreground" />
+            <input value={search} onChange={(e) => setSearch(e.target.value)} type="text" placeholder="Buscar por nome ou essência" className="w-full border-b border-border bg-transparent py-1 pl-6 text-sm outline-none transition-colors placeholder:text-muted-foreground focus:border-primary" />
+          </label>
+        </div>
+        {visibleProducts.length === 0 ? (
+          <p className="py-16 text-center text-sm text-muted-foreground">Nenhum contratipo encontrado para "{search}".</p>
+        ) : (
         <div className="grid grid-cols-2 gap-x-4 gap-y-12 sm:grid-cols-3 sm:gap-x-8 sm:gap-y-16 lg:grid-cols-4">
-          {catalogTabs[activeTab].products.map((product, index) => (
+          {visibleProducts.map((product, index) => (
             <article key={product.name} className="group cursor-pointer" onClick={() => setSelected(product)}>
               <div className="relative aspect-[4/5] overflow-hidden bg-secondary">
                 <Image src={product.image} alt={product.name} fill className="object-cover transition-transform duration-700 ease-out group-hover:scale-[1.03]" />
@@ -115,13 +138,22 @@ export default function Page() {
                   <a href={whatsappLink(product.name)} target="_blank" rel="noreferrer" onClick={(e) => e.stopPropagation()} className="flex items-center gap-1.5 text-[10px] uppercase tracking-[0.18em] text-white underline underline-offset-4"><MessageCircle size={13} /> Comprar</a>
                 </div>
               </div>
-              <div className="mt-5 flex items-start justify-between gap-3 border-t border-border pt-4">
-                <div><h3 className="font-serif text-lg sm:text-xl">{product.name}</h3><p className="mt-1 text-xs text-muted-foreground">{product.note}</p></div>
-                <p className="whitespace-nowrap text-sm">{product.price}</p>
+              <div className="mt-5 border-t border-border pt-4">
+                {(product.best_seller || product.featured) && (
+                  <div className="mb-2 flex flex-wrap gap-2">
+                    {product.best_seller && <span className="bg-accent px-2 py-0.5 text-[9px] uppercase tracking-[0.14em] text-accent-foreground">Mais vendido</span>}
+                    {product.featured && <span className="border border-accent px-2 py-0.5 text-[9px] uppercase tracking-[0.14em] text-accent-foreground">Destaque</span>}
+                  </div>
+                )}
+                <div className="flex items-start justify-between gap-3">
+                  <div><h3 className="font-serif text-lg sm:text-xl">{product.name}</h3><p className="mt-1 text-xs text-muted-foreground">{product.note}</p></div>
+                  <p className="whitespace-nowrap text-sm">{product.price}</p>
+                </div>
               </div>
             </article>
           ))}
         </div>
+        )}
       </section>
 
       <section id="ritual" className="border-y border-border bg-primary text-primary-foreground">

@@ -14,6 +14,8 @@ export type BackendProduct = {
   category_gender?: 'masculino' | 'feminino' | 'unissex'
   category_name?: string
   status?: string
+  featured?: boolean
+  best_seller?: boolean
 }
 
 export async function fetchBackendProducts(): Promise<BackendProduct[]> {
