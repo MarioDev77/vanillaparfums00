@@ -13,6 +13,8 @@ export type CatalogProduct = {
   olfactory_family?: string
   fixation?: string
   projection?: string
+  occasion?: string
+  intensity?: 'leve' | 'moderada' | 'intensa'
   size_ml?: number
   category_name?: string
   category_gender?: 'masculino' | 'feminino' | 'unissex'
@@ -41,6 +43,8 @@ export function mapBackendProduct(product: BackendProduct): CatalogProduct {
     olfactory_family: product.olfactory_family,
     fixation: product.fixation,
     projection: product.projection,
+    occasion: product.occasion,
+    intensity: product.intensity,
     size_ml: product.size_ml,
     category_name: product.category_name,
     category_gender: product.category_gender,
