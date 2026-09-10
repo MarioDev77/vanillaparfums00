@@ -224,6 +224,13 @@ export default function Page() {
         </div>
       </section>
 
+      <section aria-label="Encontre seu perfume" className="border-y border-accent/40 bg-secondary px-5 py-20 text-center lg:py-24">
+        <p className="mb-3 text-[10px] uppercase tracking-[0.3em] text-muted-foreground">Não sabe qual escolher?</p>
+        <h2 className="font-serif text-3xl md:text-5xl">Encontre seu perfume ideal</h2>
+        <p className="mx-auto mt-4 max-w-md text-sm leading-6 text-muted-foreground">Responda 3 perguntas rápidas e descubra até 3 fragrâncias do nosso catálogo feitas pra você.</p>
+        <a href="/encontre-seu-perfume" className="mt-8 inline-flex items-center gap-3 border border-primary bg-primary px-8 py-4 text-[11px] font-semibold uppercase tracking-[0.2em] text-primary-foreground transition hover:bg-transparent hover:text-primary">Fazer o quiz agora <ArrowRight size={15} /></a>
+      </section>
+
       <section className="bg-primary px-5 py-20 text-center text-primary-foreground lg:py-28"><p className="text-[10px] uppercase tracking-[0.3em] text-accent">Receba novidades Vanilla</p><h2 className="mt-4 font-serif text-3xl md:text-4xl">Uma essência especial está a caminho.</h2><div className="mx-auto mt-9 flex max-w-md border-b border-primary-foreground/30 transition-colors focus-within:border-accent"><input aria-label="Seu melhor e-mail" type="email" placeholder="Seu melhor e-mail" className="min-w-0 flex-1 bg-transparent px-1 py-3 text-sm outline-none placeholder:text-primary-foreground/50" /><button className="px-1 text-[10px] uppercase tracking-[0.18em] text-accent">Assinar</button></div></section>
 
       <section className="mx-auto max-w-3xl px-5 py-24 text-center lg:px-10">
