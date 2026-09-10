@@ -38,16 +38,11 @@ const tabs: { label: string; key: string; products: CatalogProduct[] }[] = [
     { name: 'Élan', note: 'Bergamota · Cedro · Musk', price: 'R$ 179,90', image: 'https://images.unsplash.com/photo-1592945403244-b3fbafd7f539?auto=format&fit=crop&w=700&q=85', description: 'Fragrância contratipo inspirada em grandes clássicos internacionais.' },
     { name: 'The One', note: 'Mandarina · Âmbar · Patchouli', price: 'R$ 189,90', image: 'https://images.unsplash.com/photo-1557170334-a9632e77c6e4?auto=format&fit=crop&w=700&q=85', description: 'Fragrância contratipo inspirada em grandes clássicos internacionais.' },
   ]},
-  { label: 'Cremes', key: 'cremes', products: [
-    { name: 'Creme Vanilla Silk', note: 'Hidratação · Baunilha · Vitamina E', price: 'R$ 79,90', image: 'https://images.unsplash.com/photo-1611930022073-b7a4ba5fcccd?auto=format&fit=crop&w=700&q=85', description: 'Fragrância contratipo inspirada em grandes clássicos internacionais.' },
-    { name: 'Body Butter Gold', note: 'Manteiga · Jasmim · Ouro', price: 'R$ 89,90', image: 'https://images.unsplash.com/photo-1608248543803-ba4f8c70ae0b?auto=format&fit=crop&w=700&q=85', description: 'Fragrância contratipo inspirada em grandes clássicos internacionais.' },
-    { name: 'Loção Lumière', note: 'Maciez · Íris · Musk', price: 'R$ 69,90', image: 'https://images.unsplash.com/photo-1598440947619-2c35fc9aa908?auto=format&fit=crop&w=700&q=85', description: 'Fragrância contratipo inspirada em grandes clássicos internacionais.' },
-  ]},
 ]
 
 export default function Page() {
   const [slide, setSlide] = useState(0)
-  const [activeTab, setActiveTab] = useState(0)
+  const [activeTab, setActiveTab] = useState(1)
   const [menuOpen, setMenuOpen] = useState(false)
   const [selected, setSelected] = useState<CatalogProduct | null>(null)
   const { data: backendProducts } = useSWR<BackendProduct[]>('catalog-products', fetchBackendProducts, { revalidateOnFocus: false })
@@ -57,7 +52,6 @@ export default function Page() {
     const groups = [
       { label: 'Perfumes femininos', key: 'femininos', match: (product: BackendProduct) => product.category_gender === 'feminino' },
       { label: 'Perfumes masculinos', key: 'masculinos', match: (product: BackendProduct) => product.category_gender === 'masculino' },
-      { label: 'Cremes', key: 'cremes', match: (product: BackendProduct) => product.category_name?.toLowerCase().includes('creme') || product.category_name?.toLowerCase().includes('cosmético') },
     ]
     return groups.map((group) => ({
       label: group.label,
@@ -91,7 +85,7 @@ export default function Page() {
           <button aria-label="Abrir menu" className="lg:hidden" onClick={() => setMenuOpen(!menuOpen)}>{menuOpen ? <X size={21} /> : <Menu size={21} />}</button>
           <a href="#inicio" className="flex items-center gap-3"><span className="font-serif text-lg tracking-[0.28em] sm:text-xl">CONTRATIPOS</span></a>
           <nav className={`${menuOpen ? 'flex' : 'hidden'} absolute left-0 top-[105px] z-20 w-full flex-col gap-5 border-b border-border bg-background px-5 py-6 text-xs uppercase tracking-[0.18em] lg:static lg:flex lg:w-auto lg:flex-row lg:border-0 lg:bg-transparent lg:p-0`}>
-            <a href="#colecoes" className="transition-colors hover:text-primary">Coleções</a><a href="#mais-amados" className="transition-colors hover:text-primary">Mais amados</a><a href="#ritual" className="transition-colors hover:text-primary">O ritual Vanilla</a>
+            <a href="#colecoes" className="transition-colors hover:text-primary">Coleções</a><a href="#mais-amados" className="transition-colors hover:text-primary">Mais amados</a><a href="#ritual" className="transition-colors hover:text-primary">O ritual Contratipos</a>
           </nav>
           <div className="flex items-center gap-4"><button aria-label="Buscar"><Search size={19} strokeWidth={1.5} /></button><a href={whatsappLink()} target="_blank" rel="noreferrer" aria-label="Comprar pelo WhatsApp" className="text-accent"><MessageCircle size={20} strokeWidth={1.5} /></a></div>
         </div>
@@ -124,7 +118,25 @@ export default function Page() {
         </div>
       </section>
 
-      <section id="ritual" className="border-y border-border bg-secondary"><div className="mx-auto grid max-w-7xl items-center gap-10 px-5 py-16 lg:grid-cols-2 lg:px-10 lg:py-24"><div className="relative aspect-[4/3] overflow-hidden"><Image src="/hero-cremes.png" alt="Ritual de cuidado Vanilla" fill className="object-cover" /></div><div className="max-w-md"><p className="mb-4 text-[10px] uppercase tracking-[0.3em] text-muted-foreground">O ritual Vanilla</p><h2 className="font-serif text-4xl leading-tight md:text-5xl">Perfume também é cuidado.</h2><p className="mt-5 text-sm leading-7 text-muted-foreground">Mais do que uma fragrância, criamos momentos. Texturas, notas e sensações para acompanhar todos os seus dias com presença.</p><a href="#colecoes" className="mt-7 inline-flex items-center gap-3 text-xs uppercase tracking-[0.18em] underline underline-offset-8">Conheça a linha de cuidados <ArrowRight size={15} /></a></div></div></section>
+      <section id="ritual" className="border-y border-border bg-primary text-primary-foreground">
+        <div className="mx-auto grid max-w-7xl items-center gap-0 lg:grid-cols-2">
+          <div className="relative aspect-[4/3] overflow-hidden lg:aspect-auto lg:h-[560px]">
+            <Image src="/hero-cremes.png" alt="Coleção Contratipos" fill className="object-cover" />
+            <div className="absolute inset-0 bg-gradient-to-t from-primary/40 via-transparent to-transparent" />
+          </div>
+          <div className="px-6 py-16 sm:px-10 lg:px-16 lg:py-0">
+            <p className="mb-4 text-[10px] uppercase tracking-[0.36em] text-accent">O ritual Contratipos</p>
+            <h2 className="font-serif text-4xl leading-tight md:text-5xl">A mesma essência,<br />um preço justo.</h2>
+            <p className="mt-6 max-w-md text-sm leading-7 text-primary-foreground/75">Selecionamos as fragrâncias mais desejadas do mundo e recriamos cada uma com fidelidade — nas notas, na fixação e na projeção — para que você viva a mesma experiência olfativa por um valor justo.</p>
+            <div className="mt-8 grid max-w-md grid-cols-3 gap-6 border-t border-primary-foreground/20 pt-6 text-center">
+              <div><p className="font-serif text-2xl text-accent">36+</p><p className="mt-1 text-[10px] uppercase tracking-[0.14em] text-primary-foreground/60">Contratipos</p></div>
+              <div><p className="font-serif text-2xl text-accent">100%</p><p className="mt-1 text-[10px] uppercase tracking-[0.14em] text-primary-foreground/60">Fidelidade olfativa</p></div>
+              <div><p className="font-serif text-2xl text-accent">50ml</p><p className="mt-1 text-[10px] uppercase tracking-[0.14em] text-primary-foreground/60">Eau de parfum</p></div>
+            </div>
+            <a href="#colecoes" className="mt-9 inline-flex items-center gap-3 border border-accent bg-accent px-6 py-3 text-[11px] font-semibold uppercase tracking-[0.18em] text-accent-foreground transition hover:bg-transparent hover:text-primary-foreground">Explorar o catálogo <ArrowRight size={15} /></a>
+          </div>
+        </div>
+      </section>
       <section className="bg-primary px-5 py-16 text-center text-primary-foreground"><p className="text-[10px] uppercase tracking-[0.3em] text-accent">Receba novidades Vanilla</p><h2 className="mt-4 font-serif text-3xl md:text-4xl">Uma essência especial está a caminho.</h2><div className="mx-auto mt-8 flex max-w-md border-b border-primary-foreground/40"><input aria-label="Seu melhor e-mail" type="email" placeholder="Seu melhor e-mail" className="min-w-0 flex-1 bg-transparent px-1 py-3 text-sm outline-none placeholder:text-primary-foreground/50" /><button className="px-1 text-[10px] uppercase tracking-[0.18em] text-accent">Assinar</button></div></section>
       <footer className="mx-auto flex max-w-7xl flex-col gap-5 px-5 py-8 text-[10px] uppercase tracking-[0.16em] text-muted-foreground sm:flex-row sm:items-center sm:justify-between lg:px-10"><span>© 2026 Contratipos</span><span>A mesma essência. Um preço justo.</span><a href={whatsappLink()} target="_blank" rel="noreferrer" className="inline-flex items-center gap-2 text-accent"><MessageCircle size={14} /> Comprar pelo WhatsApp</a></footer>
 
