@@ -2,7 +2,7 @@ import type { Metadata } from 'next'
 import { ArrowRight } from 'lucide-react'
 import SiteHeader from '@/components/SiteHeader'
 import SiteFooter from '@/components/SiteFooter'
-import { whatsappLink } from '@/components/SiteHeader'
+import { whatsappLink } from '@/lib/whatsapp'
 
 export const metadata: Metadata = {
   title: 'O que são contratipos? | Vanilla Parfums',
