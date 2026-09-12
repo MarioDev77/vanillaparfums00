@@ -2,7 +2,6 @@
 import { useEffect, useState } from 'react'
 
 const LETTERS = 'VANILLA'.split('')
-const STORAGE_KEY = 'vanilla-parfums:intro-visto'
 
 // Tempos da sequência (ms), calibrados pra ficar cinematográfico sem ser lento:
 // letras da VANILLA entram em cascata -> pausa -> PARFUMS entra -> segura ~1s -> fade out
@@ -25,10 +24,6 @@ export default function IntroAnimation() {
 
   useEffect(() => {
     setReady(true)
-    let alreadySeen = true
-    try { alreadySeen = window.localStorage.getItem(STORAGE_KEY) === '1' } catch {}
-
-    if (alreadySeen) return
 
     setShouldRender(true)
     // Trava o scroll enquanto a abertura roda, pra não deixar o catálogo "vazar" atrás
@@ -38,7 +33,6 @@ export default function IntroAnimation() {
     const unmountTimer = setTimeout(() => {
       setShouldRender(false)
       document.body.style.overflow = ''
-      try { window.localStorage.setItem(STORAGE_KEY, '1') } catch {}
     }, unmountAt)
 
     return () => {
