@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
-import { ArrowRight, Instagram, Mail, MessageCircle } from 'lucide-react'
+import { ArrowRight, Mail, MessageCircle } from 'lucide-react'
+import { InstagramIcon } from '@/components/InstagramIcon'
 import SiteHeader from '@/components/SiteHeader'
 import SiteFooter from '@/components/SiteFooter'
 import { whatsappLink } from '@/lib/whatsapp'
@@ -47,7 +48,7 @@ export default function SobrePage() {
           <div className="flex flex-col items-center gap-4 text-sm">
             <a href={whatsappLink()} target="_blank" rel="noreferrer" className="inline-flex items-center gap-2 text-muted-foreground hover:text-accent-foreground"><MessageCircle size={15} strokeWidth={1.5} /> WhatsApp</a>
             <a href="mailto:vanillaparfumsofc@gmail.com" className="inline-flex items-center gap-2 text-muted-foreground hover:text-accent-foreground"><Mail size={15} strokeWidth={1.5} /> vanillaparfumsofc@gmail.com</a>
-            <a href="https://www.instagram.com/vanilla.parfums01/" target="_blank" rel="noreferrer" className="inline-flex items-center gap-2 text-muted-foreground hover:text-accent-foreground"><Instagram size={15} strokeWidth={1.5} /> @vanilla.parfums01</a>
+            <a href="https://www.instagram.com/vanilla.parfums01/" target="_blank" rel="noreferrer" className="inline-flex items-center gap-2 text-muted-foreground hover:text-accent-foreground"><InstagramIcon size={15} /> @vanilla.parfums01</a>
           </div>
         </div>
 
