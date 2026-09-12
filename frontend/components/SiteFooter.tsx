@@ -1,3 +1,4 @@
+import { Instagram, Mail } from 'lucide-react'
 import { whatsappLink } from '@/lib/whatsapp'
 import { WhatsAppIcon } from '@/components/WhatsAppIcon'
 
@@ -20,8 +21,8 @@ export default function SiteFooter() {
           <p className="mb-4 text-primary-foreground">Atendimento</p>
           <nav className="flex flex-col gap-3">
             <a href={whatsappLink()} target="_blank" rel="noreferrer" className="inline-flex items-center gap-2 hover:text-accent"><WhatsAppIcon size={13} /> WhatsApp</a>
-            <span className="text-primary-foreground/40">Instagram (em breve)</span>
-            <span className="text-primary-foreground/40">E-mail (em breve)</span>
+            <a href="https://www.instagram.com/vanilla.parfums01/" target="_blank" rel="noreferrer" className="inline-flex items-center gap-2 hover:text-accent"><Instagram size={13} strokeWidth={1.5} /> Instagram</a>
+            <a href="mailto:vanillaparfumsofc@gmail.com" className="inline-flex items-center gap-2 hover:text-accent"><Mail size={13} strokeWidth={1.5} /> vanillaparfumsofc@gmail.com</a>
           </nav>
         </div>
         <div className="text-xs uppercase tracking-[0.16em] text-primary-foreground/70">
