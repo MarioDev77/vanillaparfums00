@@ -3,7 +3,8 @@
 import { useEffect, useMemo, useState } from 'react'
 import useSWR from 'swr'
 import Image from 'next/image'
-import { ArrowRight, ChevronLeft, ChevronRight, Heart, Instagram, Search, ShoppingBag, X } from 'lucide-react'
+import { ArrowRight, ChevronLeft, ChevronRight, Heart, Search, ShoppingBag, X } from 'lucide-react'
+import { InstagramIcon } from '@/components/InstagramIcon'
 import { WhatsAppIcon } from '@/components/WhatsAppIcon'
 import { backendImageUrl, fetchBackendProducts, type BackendProduct } from '@/lib/backend-api'
 import { mapBackendProduct, favKey, GENDER_GROUPS, type CatalogProduct } from '@/lib/catalog'
@@ -222,7 +223,7 @@ export default function Page() {
         <h2 className="font-serif text-3xl md:text-4xl">Conheça a Vanilla</h2>
         <div className="mx-auto mt-10 flex max-w-md flex-col items-center gap-4 border border-accent/50 bg-accent/5 px-6 py-10">
           <p className="text-sm text-muted-foreground">Acompanhe lançamentos, bastidores e novidades da Vanilla Parfums no Instagram.</p>
-          <a href="https://www.instagram.com/vanilla.parfums01/" target="_blank" rel="noreferrer" className="inline-flex items-center gap-2 border border-primary bg-primary px-6 py-3 text-[11px] uppercase tracking-[0.18em] text-primary-foreground transition hover:bg-transparent hover:text-primary"><Instagram size={15} strokeWidth={1.5} /> @vanilla.parfums01</a>
+          <a href="https://www.instagram.com/vanilla.parfums01/" target="_blank" rel="noreferrer" className="inline-flex items-center gap-2 border border-primary bg-primary px-6 py-3 text-[11px] uppercase tracking-[0.18em] text-primary-foreground transition hover:bg-transparent hover:text-primary"><InstagramIcon size={15} /> @vanilla.parfums01</a>
         </div>
       </section>
 
