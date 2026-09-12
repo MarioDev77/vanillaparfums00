@@ -3,12 +3,13 @@ import { Suspense, useMemo, useState } from 'react'
 import { useSearchParams } from 'next/navigation'
 import useSWR from 'swr'
 import Image from 'next/image'
-import { Heart, MessageCircle } from 'lucide-react'
+import { Heart } from 'lucide-react'
+import { WhatsAppIcon } from '@/components/WhatsAppIcon'
 import { fetchBackendProducts, type BackendProduct } from '@/lib/backend-api'
 import { mapBackendProduct, favKey, type CatalogProduct } from '@/lib/catalog'
 import { useFavorites } from '@/lib/favorites-context'
 import { useCart } from '@/lib/cart-context'
-import { whatsappLink } from '@/components/SiteHeader'
+import { whatsappLink } from '@/lib/whatsapp'
 import SiteHeader from '@/components/SiteHeader'
 import SiteFooter from '@/components/SiteFooter'
 
@@ -169,7 +170,7 @@ function CatalogoContent() {
                   <div className="mt-4 flex items-center gap-4">
                     {product.code && <a href={`/produto/${product.code}`} className="text-[10px] uppercase tracking-[0.16em] underline underline-offset-4">Ver perfume</a>}
                     {product.code && <button onClick={() => { cart.addItem(product); cart.openCart() }} className="text-[10px] uppercase tracking-[0.16em] text-muted-foreground underline underline-offset-4">Adicionar ao carrinho</button>}
-                    <a href={whatsappLink(product.name)} target="_blank" rel="noreferrer" className="flex items-center gap-1 text-[10px] uppercase tracking-[0.16em] text-accent-foreground underline underline-offset-4"><MessageCircle size={11} /> WhatsApp</a>
+                    <a href={whatsappLink(product.name)} target="_blank" rel="noreferrer" className="flex items-center gap-1 text-[10px] uppercase tracking-[0.16em] text-accent-foreground underline underline-offset-4"><WhatsAppIcon size={11} /> WhatsApp</a>
                   </div>
                 </div>
               </article>

@@ -1,12 +1,11 @@
 'use client'
 import { useState } from 'react'
-import { Heart, Menu, MessageCircle, Search, ShoppingBag, X } from 'lucide-react'
+import { Heart, Menu, Search, ShoppingBag, X } from 'lucide-react'
+import { WhatsAppIcon } from '@/components/WhatsAppIcon'
 import { useCart } from '@/lib/cart-context'
 import { useFavorites } from '@/lib/favorites-context'
+import { whatsappLink } from '@/lib/whatsapp'
 import CartPanel from '@/components/CartPanel'
-
-export const whatsappLink = (productName?: string) =>
-  `/api/whatsapp?text=${encodeURIComponent(productName ? `Olá! Tenho interesse no contratipo ${productName}.` : 'Olá! Gostaria de conhecer os contratipos disponíveis.')}`
 
 export default function SiteHeader() {
   const [menuOpen, setMenuOpen] = useState(false)
@@ -32,7 +31,7 @@ export default function SiteHeader() {
               <Heart size={19} strokeWidth={1.5} fill={favorites.size > 0 ? 'currentColor' : 'none'} />
               {favorites.size > 0 && <span className="absolute -right-2 -top-2 flex h-4 min-w-4 items-center justify-center rounded-full bg-accent px-1 text-[9px] text-accent-foreground">{favorites.size}</span>}
             </a>
-            <a href={whatsappLink()} target="_blank" rel="noreferrer" aria-label="Comprar pelo WhatsApp" className="text-accent"><MessageCircle size={20} strokeWidth={1.5} /></a>
+            <a href={whatsappLink()} target="_blank" rel="noreferrer" aria-label="Comprar pelo WhatsApp"><WhatsAppIcon size={18} /></a>
             <button aria-label="Abrir carrinho" onClick={() => cart.openCart()} className="relative">
               <ShoppingBag size={19} strokeWidth={1.5} />
               {cart.count > 0 && <span className="absolute -right-2 -top-2 flex h-4 min-w-4 items-center justify-center rounded-full bg-accent px-1 text-[9px] text-accent-foreground">{cart.count}</span>}
@@ -42,7 +41,7 @@ export default function SiteHeader() {
       </header>
       <CartPanel open={cart.isOpen} onClose={() => cart.closeCart()} />
       <a href={whatsappLink()} target="_blank" rel="noreferrer" aria-label="Falar no WhatsApp" className="fixed bottom-6 right-6 z-40 flex h-14 w-14 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-lg shadow-black/20 transition hover:opacity-90">
-        <MessageCircle size={24} strokeWidth={1.5} />
+        <WhatsAppIcon size={26} />
       </a>
     </>
   )

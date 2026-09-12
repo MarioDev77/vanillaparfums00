@@ -2,10 +2,11 @@
 import { useMemo, useState } from 'react'
 import Image from 'next/image'
 import useSWR from 'swr'
-import { ArrowRight, MessageCircle } from 'lucide-react'
+import { ArrowRight } from 'lucide-react'
+import { WhatsAppIcon } from '@/components/WhatsAppIcon'
 import { fetchBackendProducts, type BackendProduct } from '@/lib/backend-api'
 import { mapBackendProduct, favKey, type CatalogProduct } from '@/lib/catalog'
-import { whatsappLink } from '@/components/SiteHeader'
+import { whatsappLink } from '@/lib/whatsapp'
 import SiteHeader from '@/components/SiteHeader'
 import SiteFooter from '@/components/SiteFooter'
 
@@ -114,7 +115,7 @@ export default function EncontreSeuPerfumePage() {
                       <h3 className="font-serif text-lg">{product.name}</h3>
                       <p className="mt-1 text-xs text-muted-foreground">{product.note}</p>
                       <p className="mt-2 text-sm">{product.price}</p>
-                      <a href={whatsappLink(product.name)} target="_blank" rel="noreferrer" className="mt-3 inline-flex items-center gap-1.5 text-[10px] uppercase tracking-[0.16em] text-accent-foreground underline underline-offset-4"><MessageCircle size={12} /> Comprar</a>
+                      <a href={whatsappLink(product.name)} target="_blank" rel="noreferrer" className="mt-3 inline-flex items-center gap-1.5 text-[10px] uppercase tracking-[0.16em] text-accent-foreground underline underline-offset-4"><WhatsAppIcon size={12} /> Comprar</a>
                     </div>
                   </div>
                 ))}

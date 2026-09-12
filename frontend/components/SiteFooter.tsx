@@ -1,5 +1,5 @@
-import { MessageCircle } from 'lucide-react'
-import { whatsappLink } from './SiteHeader'
+import { whatsappLink } from '@/lib/whatsapp'
+import { WhatsAppIcon } from '@/components/WhatsAppIcon'
 
 export default function SiteFooter() {
   return (
@@ -19,7 +19,7 @@ export default function SiteFooter() {
         <div className="text-xs uppercase tracking-[0.16em] text-primary-foreground/70">
           <p className="mb-4 text-primary-foreground">Atendimento</p>
           <nav className="flex flex-col gap-3">
-            <a href={whatsappLink()} target="_blank" rel="noreferrer" className="inline-flex items-center gap-2 hover:text-accent"><MessageCircle size={14} /> WhatsApp</a>
+            <a href={whatsappLink()} target="_blank" rel="noreferrer" className="inline-flex items-center gap-2 hover:text-accent"><WhatsAppIcon size={13} /> WhatsApp</a>
             <span className="text-primary-foreground/40">Instagram (em breve)</span>
             <span className="text-primary-foreground/40">E-mail (em breve)</span>
           </nav>

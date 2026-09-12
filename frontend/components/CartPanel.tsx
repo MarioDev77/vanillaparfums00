@@ -2,6 +2,7 @@
 import Image from 'next/image'
 import { X, Minus, Plus, Trash2 } from 'lucide-react'
 import { useCart } from '@/lib/cart-context'
+import { WhatsAppIcon } from '@/components/WhatsAppIcon'
 
 function formatMoney(value: number) {
   return `R$ ${value.toFixed(2).replace('.', ',')}`
@@ -62,7 +63,7 @@ export default function CartPanel({ open, onClose }: { open: boolean; onClose: (
               rel="noreferrer"
               className="flex w-full items-center justify-center gap-2 bg-primary px-6 py-3 text-[11px] font-semibold uppercase tracking-[0.18em] text-primary-foreground transition hover:opacity-90"
             >
-              Finalizar pedido pelo WhatsApp
+              <WhatsAppIcon size={16} /> Finalizar pedido pelo WhatsApp
             </a>
             <p className="mt-3 text-center text-[10px] text-muted-foreground">Você vai confirmar o pedido diretamente no WhatsApp.</p>
           </div>

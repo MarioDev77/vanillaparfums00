@@ -3,13 +3,15 @@
 import { useEffect, useMemo, useState } from 'react'
 import useSWR from 'swr'
 import Image from 'next/image'
-import { ArrowRight, ChevronLeft, ChevronRight, Heart, MessageCircle, Search, ShoppingBag, X } from 'lucide-react'
+import { ArrowRight, ChevronLeft, ChevronRight, Heart, Search, ShoppingBag, X } from 'lucide-react'
+import { WhatsAppIcon } from '@/components/WhatsAppIcon'
 import { backendImageUrl, fetchBackendProducts, type BackendProduct } from '@/lib/backend-api'
 import { mapBackendProduct, favKey, GENDER_GROUPS, type CatalogProduct } from '@/lib/catalog'
 import { useCart } from '@/lib/cart-context'
 import { useFavorites } from '@/lib/favorites-context'
-import SiteHeader, { whatsappLink } from '@/components/SiteHeader'
+import SiteHeader from '@/components/SiteHeader'
 import SiteFooter from '@/components/SiteFooter'
+import { whatsappLink } from '@/lib/whatsapp'
 
 
 const slides = [
@@ -157,7 +159,7 @@ export default function Page() {
                   {product.code ? (
                     <a href={`/produto/${product.code}`} onClick={(e) => e.stopPropagation()} className="text-[10px] uppercase tracking-[0.18em] text-white underline underline-offset-4">Ver perfume</a>
                   ) : <span className="text-[10px] uppercase tracking-[0.18em] text-white">Ver detalhes</span>}
-                  <a href={whatsappLink(product.name)} target="_blank" rel="noreferrer" onClick={(e) => e.stopPropagation()} className="flex items-center gap-1.5 text-[10px] uppercase tracking-[0.18em] text-white underline underline-offset-4"><MessageCircle size={13} /> Comprar</a>
+                  <a href={whatsappLink(product.name)} target="_blank" rel="noreferrer" onClick={(e) => e.stopPropagation()} className="flex items-center gap-1.5 text-[10px] uppercase tracking-[0.18em] text-white underline underline-offset-4"><WhatsAppIcon size={13} /> Comprar</a>
                 </div>
               </div>
               <div className="mt-5 border-t border-border pt-4">
@@ -268,7 +270,7 @@ export default function Page() {
 
               {!hasDetails && <p className="text-sm text-muted-foreground">{selected.note}</p>}
 
-              <a href={whatsappLink(selected.name)} target="_blank" rel="noreferrer" className="mt-2 inline-flex items-center justify-center gap-2 border border-primary bg-primary py-3 text-[11px] uppercase tracking-[0.2em] text-primary-foreground transition hover:bg-transparent hover:text-primary"><MessageCircle size={15} /> Comprar pelo WhatsApp</a>
+              <a href={whatsappLink(selected.name)} target="_blank" rel="noreferrer" className="mt-2 inline-flex items-center justify-center gap-2 border border-primary bg-primary py-3 text-[11px] uppercase tracking-[0.2em] text-primary-foreground transition hover:bg-transparent hover:text-primary"><WhatsAppIcon size={15} /> Comprar pelo WhatsApp</a>
               {selected.code && (
                 <button onClick={() => { cart.addItem(selected); cart.openCart() }} className="inline-flex items-center justify-center gap-2 border border-primary py-3 text-[11px] uppercase tracking-[0.2em] text-primary transition hover:bg-primary hover:text-primary-foreground"><ShoppingBag size={15} /> Adicionar ao carrinho</button>
               )}

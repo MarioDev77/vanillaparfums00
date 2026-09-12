@@ -1,16 +1,33 @@
 'use client'
+import { useState } from 'react'
 import Image from 'next/image'
-import { Heart, MessageCircle, ShoppingBag } from 'lucide-react'
+import { Heart, Share2, ShoppingBag } from 'lucide-react'
 import { favKey, type CatalogProduct } from '@/lib/catalog'
 import { useFavorites } from '@/lib/favorites-context'
 import { useCart } from '@/lib/cart-context'
-import { whatsappLink } from '@/components/SiteHeader'
+import { whatsappLink } from '@/lib/whatsapp'
+import { WhatsAppIcon } from '@/components/WhatsAppIcon'
 
 export default function ProductDetail({ product }: { product: CatalogProduct }) {
   const { favorites, toggleFavorite } = useFavorites()
   const cart = useCart()
+  const [copied, setCopied] = useState(false)
   const isFav = favorites.has(favKey(product))
   const hasPyramid = product.top_notes || product.heart_notes || product.base_notes
+
+  async function share() {
+    const shareText = `Olha esse perfume: ${product.name} da Vanilla Parfums.`
+    const shareUrl = typeof window !== 'undefined' ? window.location.href : undefined
+    if (typeof navigator !== 'undefined' && navigator.share) {
+      try { await navigator.share({ title: product.name, text: shareText, url: shareUrl }) } catch {}
+      return
+    }
+    try {
+      await navigator.clipboard.writeText(shareUrl ? `${shareText} ${shareUrl}` : shareText)
+      setCopied(true)
+      setTimeout(() => setCopied(false), 2200)
+    } catch {}
+  }
 
   return (
     <section className="mx-auto grid max-w-6xl grid-cols-1 gap-10 px-5 py-14 lg:grid-cols-2 lg:gap-16 lg:px-10 lg:py-20">
@@ -33,9 +50,13 @@ export default function ProductDetail({ product }: { product: CatalogProduct }) 
         {product.size_ml && <p className="mt-1 text-xs text-muted-foreground">{product.size_ml}ml · Eau de Parfum</p>}
 
         <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-          <a href={whatsappLink(product.name)} target="_blank" rel="noreferrer" className="flex flex-1 items-center justify-center gap-2 border border-primary bg-primary py-3 text-[11px] uppercase tracking-[0.2em] text-primary-foreground transition hover:bg-transparent hover:text-primary"><MessageCircle size={15} /> Comprar pelo WhatsApp</a>
+          <a href={whatsappLink(product.name)} target="_blank" rel="noreferrer" className="flex flex-1 items-center justify-center gap-2 border border-primary bg-primary py-3 text-[11px] uppercase tracking-[0.2em] text-primary-foreground transition hover:bg-transparent hover:text-primary"><WhatsAppIcon size={15} /> Comprar pelo WhatsApp</a>
           <button onClick={() => { cart.addItem(product); cart.openCart() }} className="flex flex-1 items-center justify-center gap-2 border border-primary py-3 text-[11px] uppercase tracking-[0.2em] text-primary transition hover:bg-primary hover:text-primary-foreground"><ShoppingBag size={15} /> Adicionar ao carrinho</button>
         </div>
+
+        <button onClick={share} className="mt-4 inline-flex items-center gap-2 text-xs text-muted-foreground transition hover:text-foreground">
+          <Share2 size={15} /> {copied ? 'Link copiado' : 'Compartilhar perfume'}
+        </button>
 
         {product.description && <p className="mt-8 text-sm leading-7 text-muted-foreground">{product.description}</p>}
 
