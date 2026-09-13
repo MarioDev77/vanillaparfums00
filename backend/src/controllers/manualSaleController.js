@@ -6,7 +6,7 @@ const SALE_COLUMNS = `
   ms.id, ms.product_id, ms.customer_name, ms.contact,
   to_char(ms.sale_date, 'YYYY-MM-DD') AS sale_date,
   to_char(ms.payment_date, 'YYYY-MM-DD') AS payment_date,
-  ms.quantity, ms.unit_price, ms.unit_cost, ms.status, ms.notes,
+  ms.quantity, ms.unit_price, ms.unit_cost, ms.status, ms.payment_method, ms.notes,
   ms.created_at, ms.updated_at,
   p.code AS product_code, p.name AS product_name,
   (ms.unit_price - ms.unit_cost) * ms.quantity AS profit
@@ -32,7 +32,7 @@ async function create(req, res, next) {
   try {
     const {
       product_id, customer_name, contact, sale_date, payment_date,
-      quantity, unit_price, status, notes,
+      quantity, unit_price, status, payment_method, notes,
     } = req.body;
 
     if (!product_id || !customer_name || !unit_price) {
@@ -48,8 +48,8 @@ async function create(req, res, next) {
     const inserted = await pool.query(
       `INSERT INTO manual_sales (
         product_id, customer_name, contact, sale_date, payment_date,
-        quantity, unit_price, unit_cost, status, notes
-      ) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10)
+        quantity, unit_price, unit_cost, status, payment_method, notes
+      ) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11)
       RETURNING id`,
       [
         product_id,
@@ -61,6 +61,7 @@ async function create(req, res, next) {
         unit_price,
         unitCost,
         status || 'pendente',
+        payment_method || 'dinheiro',
         notes || null,
       ]
     );
@@ -101,7 +102,7 @@ async function update(req, res, next) {
       setClauses.push(`unit_cost = $${values.length}`);
     }
 
-    const allowed = ['customer_name', 'contact', 'sale_date', 'payment_date', 'quantity', 'unit_price', 'status', 'notes'];
+    const allowed = ['customer_name', 'contact', 'sale_date', 'payment_date', 'quantity', 'unit_price', 'status', 'payment_method', 'notes'];
 
     allowed.forEach((field) => {
       if (fields[field] !== undefined) {
@@ -213,7 +214,7 @@ async function exportCsv(req, res, next) {
               (ms.unit_price * ms.quantity) AS receita_total,
               (ms.unit_cost * ms.quantity) AS custo_total,
               ((ms.unit_price - ms.unit_cost) * ms.quantity) AS lucro,
-              ms.status
+              ms.status, ms.payment_method AS forma_pagamento
        FROM manual_sales ms
        JOIN products p ON p.id = ms.product_id
        ORDER BY ms.sale_date DESC, ms.id DESC`
@@ -221,7 +222,7 @@ async function exportCsv(req, res, next) {
 
     const header = [
       'ID', 'Código', 'Perfume', 'Cliente', 'Contato', 'Data da venda', 'Data de pagamento',
-      'Quantidade', 'Valor unitário', 'Custo unitário', 'Receita total', 'Custo total', 'Lucro', 'Status',
+      'Quantidade', 'Valor unitário', 'Custo unitário', 'Receita total', 'Custo total', 'Lucro', 'Status', 'Forma de pagamento',
     ];
 
     const escapeCsv = (value) => {
@@ -236,6 +237,7 @@ async function exportCsv(req, res, next) {
       r.data_venda || '', r.data_pagamento || '',
       r.quantidade, r.valor_unitario, r.custo_unitario, r.receita_total, r.custo_total, r.lucro,
       r.status === 'pago' ? 'Pago' : 'Pendente',
+      r.forma_pagamento === 'pix' ? 'Pix' : 'Dinheiro',
     ].map(escapeCsv).join(';'));
 
     const csv = '\uFEFF' + [header.join(';'), ...rows].join('\n');

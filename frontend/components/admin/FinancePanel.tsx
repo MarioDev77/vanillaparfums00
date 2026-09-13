@@ -2,7 +2,7 @@
 import { FormEvent, useEffect, useState } from 'react'
 import { Download, Pencil, Trash2, X } from 'lucide-react'
 import { adminFetch, adminJson } from '@/lib/admin-client'
-import { ManualSale, ManualSalesStats, Product, formatMoney, parseBrNumber } from './types'
+import { MANUAL_SALE_PAYMENT_METHODS, ManualSale, ManualSalesStats, Product, formatMoney, parseBrNumber } from './types'
 
 const empty = {
   product_id: '',
@@ -13,6 +13,7 @@ const empty = {
   quantity: '1',
   unit_price: '',
   status: 'pendente' as 'pago' | 'pendente',
+  payment_method: 'dinheiro' as 'pix' | 'dinheiro',
   notes: '',
 }
 
@@ -61,6 +62,7 @@ export default function FinancePanel() {
       quantity: String(sale.quantity),
       unit_price: String(sale.unit_price ?? '').replace('.', ','),
       status: sale.status,
+      payment_method: sale.payment_method ?? 'dinheiro',
       notes: sale.notes ?? '',
     })
     setMessage('')
@@ -86,6 +88,7 @@ export default function FinancePanel() {
       quantity: Number(form.quantity) || 1,
       unit_price: parseBrNumber(form.unit_price),
       status: form.status,
+      payment_method: form.payment_method,
       notes: form.notes,
     }
     if (!payload.product_id || !payload.customer_name || !payload.unit_price) {
@@ -120,37 +123,37 @@ export default function FinancePanel() {
   }
 
   return (
-    <div className="grid gap-8">
+    <div className="grid gap-5">
       {stats && (
-        <div className="grid gap-4 sm:grid-cols-3">
-          <div className="rounded-xl bg-background p-6 shadow-sm">
-            <p className="text-xs uppercase tracking-widest text-muted-foreground">Faturamento (vendas manuais)</p>
-            <p className="mt-3 font-serif text-3xl">{formatMoney(stats.total_revenue)}</p>
-            <p className="mt-1 text-xs text-muted-foreground">{stats.sales_count} venda{stats.sales_count === 1 ? '' : 's'} registrada{stats.sales_count === 1 ? '' : 's'}</p>
+        <div className="grid gap-3 sm:grid-cols-3">
+          <div className="rounded-xl bg-background p-4 shadow-sm">
+            <p className="text-[10px] uppercase tracking-widest text-muted-foreground">Faturamento (vendas manuais)</p>
+            <p className="mt-1.5 font-serif text-2xl">{formatMoney(stats.total_revenue)}</p>
+            <p className="mt-0.5 text-[11px] text-muted-foreground">{stats.sales_count} venda{stats.sales_count === 1 ? '' : 's'} registrada{stats.sales_count === 1 ? '' : 's'}</p>
           </div>
-          <div className="rounded-xl bg-background p-6 shadow-sm">
-            <p className="text-xs uppercase tracking-widest text-muted-foreground">Lucro total</p>
-            <p className={`mt-3 font-serif text-3xl ${Number(stats.total_profit) < 0 ? 'text-red-700' : ''}`}>{formatMoney(stats.total_profit)}</p>
-            <p className="mt-1 text-xs text-muted-foreground">Receita − custo dos perfumes</p>
+          <div className="rounded-xl bg-background p-4 shadow-sm">
+            <p className="text-[10px] uppercase tracking-widest text-muted-foreground">Lucro total</p>
+            <p className={`mt-1.5 font-serif text-2xl ${Number(stats.total_profit) < 0 ? 'text-red-700' : ''}`}>{formatMoney(stats.total_profit)}</p>
+            <p className="mt-0.5 text-[11px] text-muted-foreground">Receita − custo dos perfumes</p>
           </div>
-          <div className="rounded-xl bg-background p-6 shadow-sm">
-            <p className="text-xs uppercase tracking-widest text-muted-foreground">Custo total</p>
-            <p className="mt-3 font-serif text-3xl">{formatMoney(stats.total_cost)}</p>
-            <p className="mt-1 text-xs text-muted-foreground">Custo dos perfumes vendidos</p>
+          <div className="rounded-xl bg-background p-4 shadow-sm">
+            <p className="text-[10px] uppercase tracking-widest text-muted-foreground">Custo total</p>
+            <p className="mt-1.5 font-serif text-2xl">{formatMoney(stats.total_cost)}</p>
+            <p className="mt-0.5 text-[11px] text-muted-foreground">Custo dos perfumes vendidos</p>
           </div>
         </div>
       )}
 
-      <div className="grid gap-8 lg:grid-cols-[420px_1fr]">
-        <form onSubmit={save} className="h-fit rounded-xl bg-background p-5 shadow-sm">
+      <div className="grid gap-5 lg:grid-cols-[360px_1fr]">
+        <form onSubmit={save} className="h-fit rounded-xl bg-background p-4 shadow-sm">
           <div className="flex items-center justify-between">
-            <h2 className="font-serif text-2xl">{editingId ? 'Editar venda' : 'Registrar venda'}</h2>
+            <h2 className="font-serif text-xl">{editingId ? 'Editar venda' : 'Registrar venda'}</h2>
             {editingId && (
-              <button type="button" onClick={cancelEdit} aria-label="Cancelar edição" className="rounded-full p-1 hover:bg-secondary"><X size={20} /></button>
+              <button type="button" onClick={cancelEdit} aria-label="Cancelar edição" className="rounded-full p-1 hover:bg-secondary"><X size={18} /></button>
             )}
           </div>
 
-          <div className="mt-4 grid gap-3">
+          <div className="mt-3 grid gap-2.5">
             <label className={labelClass}>Perfume
               <select value={form.product_id} onChange={(e) => setForm({ ...form, product_id: e.target.value })} required className={inputClass}>
                 <option value="">Selecione...</option>
@@ -184,29 +187,36 @@ export default function FinancePanel() {
               </label>
             </div>
 
-            <label className={labelClass}>Status do pagamento
-              <select value={form.status} onChange={(e) => setForm({ ...form, status: e.target.value as 'pago' | 'pendente' })} className={inputClass}>
-                <option value="pendente">Pendente</option>
-                <option value="pago">Pago</option>
-              </select>
-            </label>
+            <div className="grid grid-cols-2 gap-3">
+              <label className={labelClass}>Status do pagamento
+                <select value={form.status} onChange={(e) => setForm({ ...form, status: e.target.value as 'pago' | 'pendente' })} className={inputClass}>
+                  <option value="pendente">Pendente</option>
+                  <option value="pago">Pago</option>
+                </select>
+              </label>
+              <label className={labelClass}>Forma de pagamento
+                <select value={form.payment_method} onChange={(e) => setForm({ ...form, payment_method: e.target.value as 'pix' | 'dinheiro' })} className={inputClass}>
+                  {MANUAL_SALE_PAYMENT_METHODS.map((m) => <option key={m.value} value={m.value}>{m.label}</option>)}
+                </select>
+              </label>
+            </div>
 
             <label className={labelClass}>Observações
               <textarea value={form.notes} onChange={(e) => setForm({ ...form, notes: e.target.value })} rows={2} className={inputClass} />
             </label>
           </div>
 
-          {message && <p className="mt-3 text-sm text-accent-foreground">{message}</p>}
-          <button disabled={saving} className="mt-4 w-full rounded-md bg-primary p-3 text-xs uppercase tracking-widest text-primary-foreground transition-opacity hover:opacity-90 disabled:opacity-50">
+          {message && <p className="mt-2 text-xs text-accent-foreground">{message}</p>}
+          <button disabled={saving} className="mt-3 w-full rounded-md bg-primary p-2.5 text-xs uppercase tracking-widest text-primary-foreground transition-opacity hover:opacity-90 disabled:opacity-50">
             {saving ? 'Salvando...' : editingId ? 'Salvar alterações' : 'Registrar venda'}
           </button>
         </form>
 
-        <section>
-          <div className="mb-5 flex items-end justify-between">
-            <h2 className="font-serif text-3xl">Vendas registradas</h2>
-            <a href="/api/admin/manual-sales/export" className="flex items-center gap-2 rounded-md border border-border px-3 py-2 text-[10px] uppercase tracking-widest hover:bg-secondary">
-              <Download size={14} /> Exportar CSV
+        <section className="min-w-0">
+          <div className="mb-3 flex items-center justify-between">
+            <h2 className="font-serif text-xl">Vendas registradas</h2>
+            <a href="/api/admin/manual-sales/export" className="flex items-center gap-1.5 rounded-md border border-border px-2 py-1.5 text-[9px] uppercase tracking-widest hover:bg-secondary">
+              <Download size={12} /> Exportar
             </a>
           </div>
 
@@ -215,43 +225,46 @@ export default function FinancePanel() {
           ) : sales.length === 0 ? (
             <p className="text-sm text-muted-foreground">Nenhuma venda registrada ainda.</p>
           ) : (
-            <div className="overflow-x-auto rounded-xl bg-background shadow-sm">
-              <table className="w-full text-sm">
+            <div className="min-w-0 rounded-xl bg-background shadow-sm">
+              <table className="w-full table-fixed text-xs">
                 <thead>
-                  <tr className="border-b border-border text-left text-[10px] uppercase tracking-widest text-muted-foreground">
-                    <th className="p-3">Perfume</th>
-                    <th className="p-3">Cliente</th>
-                    <th className="p-3">Venda</th>
-                    <th className="p-3">Pagamento</th>
-                    <th className="p-3">Qtd</th>
-                    <th className="p-3">Valor</th>
-                    <th className="p-3">Lucro</th>
-                    <th className="p-3">Status</th>
-                    <th className="p-3"></th>
+                  <tr className="border-b border-border text-left text-[9px] uppercase tracking-widest text-muted-foreground">
+                    <th className="p-2 w-[18%]">Perfume</th>
+                    <th className="p-2 w-[16%]">Cliente</th>
+                    <th className="p-2 w-[13%]">Datas</th>
+                    <th className="p-2 w-[7%]">Qtd</th>
+                    <th className="p-2 w-[11%]">Valor</th>
+                    <th className="p-2 w-[11%]">Lucro</th>
+                    <th className="p-2 w-[10%]">Pagto.</th>
+                    <th className="p-2 w-[9%]">Status</th>
+                    <th className="p-2 w-[5%]"></th>
                   </tr>
                 </thead>
                 <tbody>
                   {sales.map((sale) => (
-                    <tr key={sale.id} className="border-b border-border last:border-0">
-                      <td className="p-3">{sale.product_name} <span className="text-xs text-muted-foreground">({sale.product_code})</span></td>
-                      <td className="p-3">
+                    <tr key={sale.id} className="border-b border-border last:border-0 align-top">
+                      <td className="truncate p-2">{sale.product_name} <span className="text-[10px] text-muted-foreground">({sale.product_code})</span></td>
+                      <td className="truncate p-2">
                         {sale.customer_name}
-                        {sale.contact && <p className="text-xs text-muted-foreground">{sale.contact}</p>}
+                        {sale.contact && <p className="truncate text-[10px] text-muted-foreground">{sale.contact}</p>}
                       </td>
-                      <td className="p-3">{formatDateBr(sale.sale_date)}</td>
-                      <td className="p-3">{formatDateBr(sale.payment_date)}</td>
-                      <td className="p-3">{sale.quantity}</td>
-                      <td className="p-3">{formatMoney(sale.unit_price)}</td>
-                      <td className={`p-3 ${Number(sale.profit) < 0 ? 'text-red-700' : 'text-accent-foreground'}`}>{formatMoney(sale.profit ?? 0)}</td>
-                      <td className="p-3">
-                        <span className={`px-2 py-1 text-[10px] uppercase tracking-widest ${sale.status === 'pago' ? 'bg-accent text-accent-foreground' : 'border border-border text-muted-foreground'}`}>
-                          {sale.status === 'pago' ? 'Pago' : 'Pendente'}
+                      <td className="p-2 text-[11px] leading-tight">
+                        <p>V: {formatDateBr(sale.sale_date)}</p>
+                        <p className="text-muted-foreground">P: {formatDateBr(sale.payment_date)}</p>
+                      </td>
+                      <td className="p-2">{sale.quantity}</td>
+                      <td className="p-2">{formatMoney(sale.unit_price)}</td>
+                      <td className={`p-2 ${Number(sale.profit) < 0 ? 'text-red-700' : 'text-accent-foreground'}`}>{formatMoney(sale.profit ?? 0)}</td>
+                      <td className="p-2 text-[11px]">{sale.payment_method === 'pix' ? 'Pix' : 'Dinheiro'}</td>
+                      <td className="p-2">
+                        <span className={`inline-block px-1.5 py-0.5 text-[9px] uppercase tracking-widest ${sale.status === 'pago' ? 'bg-accent text-accent-foreground' : 'border border-border text-muted-foreground'}`}>
+                          {sale.status === 'pago' ? 'Pago' : 'Pend.'}
                         </span>
                       </td>
-                      <td className="p-3">
-                        <div className="flex gap-2">
-                          <button onClick={() => startEdit(sale)} aria-label="Editar venda" className="hover:text-accent-foreground"><Pencil size={14} /></button>
-                          <button onClick={() => remove(sale)} aria-label="Remover venda" className="text-red-700"><Trash2 size={14} /></button>
+                      <td className="p-2">
+                        <div className="flex gap-1.5">
+                          <button onClick={() => startEdit(sale)} aria-label="Editar venda" className="hover:text-accent-foreground"><Pencil size={12} /></button>
+                          <button onClick={() => remove(sale)} aria-label="Remover venda" className="text-red-700"><Trash2 size={12} /></button>
                         </div>
                       </td>
                     </tr>

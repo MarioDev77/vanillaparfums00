@@ -72,8 +72,14 @@ export type ManualSale = {
   unit_cost: string | number
   profit?: string | number
   status: 'pago' | 'pendente'
+  payment_method: 'pix' | 'dinheiro'
   notes?: string | null
 }
+
+export const MANUAL_SALE_PAYMENT_METHODS: { value: 'pix' | 'dinheiro'; label: string }[] = [
+  { value: 'dinheiro', label: 'Dinheiro' },
+  { value: 'pix', label: 'Pix' },
+]
 
 export type ManualSalesStats = {
   total_revenue: string | number
