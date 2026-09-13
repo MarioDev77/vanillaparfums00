@@ -1,5 +1,15 @@
 const pool = require('../config/db');
 
+// Colunas seguras para expor publicamente. Nunca incluir "cost" (custo/margem
+// de lucro) nem "stock_quantity"/"min_stock" (nível exato de estoque) — são
+// dados internos de negócio, mesmo que o frontend não os exiba na tela.
+const PUBLIC_PRODUCT_COLUMNS = `
+  p.id, p.code, p.name, p.category_id, p.olfactory_family, p.description,
+  p.top_notes, p.heart_notes, p.base_notes, p.fixation, p.projection,
+  p.occasion, p.intensity, p.size_ml, p.price, p.status, p.featured,
+  p.best_seller, p.image_url, p.created_at, p.updated_at
+`;
+
 // GET /products (público) — catálogo com filtros e busca
 async function list(req, res, next) {
   try {
@@ -35,7 +45,7 @@ async function list(req, res, next) {
     const whereClause = conditions.length ? `WHERE ${conditions.join(' AND ')}` : '';
 
     const result = await pool.query(
-      `SELECT p.*, c.name AS category_name, c.gender AS category_gender
+      `SELECT ${PUBLIC_PRODUCT_COLUMNS}, c.name AS category_name, c.gender AS category_gender
        FROM products p
        LEFT JOIN categories c ON c.id = p.category_id
        ${whereClause}
@@ -55,7 +65,7 @@ async function getByCode(req, res, next) {
     const { code } = req.params;
 
     const result = await pool.query(
-      `SELECT p.*, c.name AS category_name, c.gender AS category_gender
+      `SELECT ${PUBLIC_PRODUCT_COLUMNS}, c.name AS category_name, c.gender AS category_gender
        FROM products p
        LEFT JOIN categories c ON c.id = p.category_id
        WHERE p.code = $1`,

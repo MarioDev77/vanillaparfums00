@@ -45,6 +45,14 @@ async function create(req, res, next) {
     const validatedItems = [];
 
     for (const item of items) {
+      // Nunca confiar em quantidade vinda do cliente sem validar: sem isso, um
+      // valor negativo ou zero permite manipular subtotal/total do pedido e
+      // até "devolver" estoque artificialmente (delta negativo na subtração).
+      if (!Number.isInteger(item.quantity) || item.quantity < 1) {
+        await client.query('ROLLBACK');
+        return res.status(400).json({ error: `Quantidade inválida para o produto ${item.product_id}.` });
+      }
+
       const productResult = await client.query(
         'SELECT id, price, cost, stock_quantity, status FROM products WHERE id = $1 FOR UPDATE',
         [item.product_id]

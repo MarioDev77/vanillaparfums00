@@ -23,6 +23,13 @@ async function create(req, res, next) {
       return res.status(400).json({ error: 'Tipo de desconto inválido.' });
     }
 
+    if (Number(discount_value) <= 0) {
+      return res.status(400).json({ error: 'O valor do desconto deve ser maior que zero.' });
+    }
+    if (discount_type === 'percentage' && Number(discount_value) > 100) {
+      return res.status(400).json({ error: 'Desconto percentual não pode passar de 100%.' });
+    }
+
     const result = await pool.query(
       `INSERT INTO coupons (code, discount_type, discount_value, valid_from, valid_until, max_uses, active)
        VALUES ($1, $2, $3, $4, $5, $6, COALESCE($7, true)) RETURNING *`,
@@ -46,6 +53,12 @@ async function update(req, res, next) {
 
     if (discount_type && !['percentage', 'fixed'].includes(discount_type)) {
       return res.status(400).json({ error: 'Tipo de desconto inválido.' });
+    }
+    if (discount_value !== undefined && discount_value !== null && Number(discount_value) <= 0) {
+      return res.status(400).json({ error: 'O valor do desconto deve ser maior que zero.' });
+    }
+    if (discount_type === 'percentage' && Number(discount_value) > 100) {
+      return res.status(400).json({ error: 'Desconto percentual não pode passar de 100%.' });
     }
 
     const result = await pool.query(
