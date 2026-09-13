@@ -9,6 +9,7 @@ const productRoutes = require('./routes/productRoutes');
 const stockRoutes = require('./routes/stockRoutes');
 const orderRoutes = require('./routes/orderRoutes');
 const couponRoutes = require('./routes/couponRoutes');
+const manualSaleRoutes = require('./routes/manualSaleRoutes');
 const errorHandler = require('./middlewares/errorHandler');
 
 const app = express();
@@ -30,6 +31,7 @@ app.use('/api/products', productRoutes);
 app.use('/api/stock', stockRoutes);
 app.use('/api/orders', orderRoutes);
 app.use('/api/coupons', couponRoutes);
+app.use('/api/manual-sales', manualSaleRoutes);
 
 app.use((req, res) => res.status(404).json({ error: 'Rota não encontrada.' }));
 app.use(errorHandler);

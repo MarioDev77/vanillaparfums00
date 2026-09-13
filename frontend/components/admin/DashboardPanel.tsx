@@ -1,17 +1,82 @@
 'use client'
 import { useEffect, useState } from 'react'
-import { BarChart3, DollarSign, Package, ShoppingBag } from 'lucide-react'
+import { BarChart3, DollarSign, Package, ShoppingBag, TrendingUp } from 'lucide-react'
 import { adminJson } from '@/lib/admin-client'
-import { DashboardStats, ORDER_STATUSES, formatMoney } from './types'
+import { DashboardStats, ManualSalesStats, ORDER_STATUSES, formatMoney } from './types'
+
+const MONTH_LABELS = ['jan', 'fev', 'mar', 'abr', 'mai', 'jun', 'jul', 'ago', 'set', 'out', 'nov', 'dez']
+
+function monthLabel(month: string) {
+  const [year, m] = month.split('-')
+  return `${MONTH_LABELS[Number(m) - 1]}/${year.slice(2)}`
+}
+
+function SalesChart({ data }: { data: ManualSalesStats['by_month'] }) {
+  if (data.length === 0) {
+    return <p className="mt-4 text-sm text-muted-foreground">Ainda não há vendas manuais registradas.</p>
+  }
+
+  const width = 560
+  const height = 220
+  const padding = { top: 10, right: 10, bottom: 28, left: 10 }
+  const chartWidth = width - padding.left - padding.right
+  const chartHeight = height - padding.top - padding.bottom
+  const groupWidth = chartWidth / data.length
+  const barWidth = Math.min(18, groupWidth / 3)
+
+  const maxValue = Math.max(...data.map((d) => Math.max(Number(d.revenue), Number(d.profit))), 1)
+
+  return (
+    <svg viewBox={`0 0 ${width} ${height}`} className="mt-4 w-full" role="img" aria-label="Gráfico de vendas mensais">
+      {data.map((d, i) => {
+        const revenue = Number(d.revenue)
+        const profit = Number(d.profit)
+        const groupX = padding.left + i * groupWidth + groupWidth / 2
+        const revenueHeight = (revenue / maxValue) * chartHeight
+        const profitHeight = (Math.abs(profit) / maxValue) * chartHeight
+        const baseY = padding.top + chartHeight
+
+        return (
+          <g key={d.month}>
+            <rect
+              x={groupX - barWidth - 2}
+              y={baseY - revenueHeight}
+              width={barWidth}
+              height={revenueHeight}
+              className="fill-accent"
+            />
+            <rect
+              x={groupX + 2}
+              y={profit >= 0 ? baseY - profitHeight : baseY}
+              width={barWidth}
+              height={profitHeight}
+              className={profit >= 0 ? 'fill-primary' : 'fill-red-700'}
+            />
+            <text x={groupX} y={height - 8} textAnchor="middle" className="fill-muted-foreground text-[9px] uppercase tracking-widest">
+              {monthLabel(d.month)}
+            </text>
+          </g>
+        )
+      })}
+    </svg>
+  )
+}
 
 export default function DashboardPanel() {
   const [stats, setStats] = useState<DashboardStats | null>(null)
+  const [salesStats, setSalesStats] = useState<ManualSalesStats | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
 
   useEffect(() => {
-    adminJson<DashboardStats>('/stats')
-      .then(setStats)
+    Promise.all([
+      adminJson<DashboardStats>('/stats'),
+      adminJson<ManualSalesStats>('/manual-sales/stats'),
+    ])
+      .then(([s, m]) => {
+        setStats(s)
+        setSalesStats(m)
+      })
       .catch((err) => setError(err instanceof Error ? err.message : 'Erro ao carregar dados.'))
       .finally(() => setLoading(false))
   }, [])
@@ -44,6 +109,24 @@ export default function DashboardPanel() {
           <p className="mt-1 text-xs text-muted-foreground">{statusCount('cancelado')} cancelados</p>
         </div>
       </div>
+
+      {salesStats && (
+        <div className="rounded-xl bg-background p-6 shadow-sm">
+          <div className="flex items-center justify-between">
+            <h3 className="flex items-center gap-2 font-serif text-2xl"><TrendingUp size={20} /> Vendas manuais por mês</h3>
+            <div className="flex items-center gap-4 text-[10px] uppercase tracking-widest text-muted-foreground">
+              <span className="flex items-center gap-1"><span className="h-2 w-2 rounded-full bg-accent" /> Receita</span>
+              <span className="flex items-center gap-1"><span className="h-2 w-2 rounded-full bg-primary" /> Lucro</span>
+            </div>
+          </div>
+          <SalesChart data={salesStats.by_month} />
+          <div className="mt-2 grid grid-cols-3 gap-4 border-t border-border pt-4 text-sm">
+            <div><p className="text-[10px] uppercase tracking-widest text-muted-foreground">Faturamento</p><p className="mt-1">{formatMoney(salesStats.total_revenue)}</p></div>
+            <div><p className="text-[10px] uppercase tracking-widest text-muted-foreground">Lucro</p><p className={`mt-1 ${Number(salesStats.total_profit) < 0 ? 'text-red-700' : ''}`}>{formatMoney(salesStats.total_profit)}</p></div>
+            <div><p className="text-[10px] uppercase tracking-widest text-muted-foreground">Custo</p><p className="mt-1">{formatMoney(salesStats.total_cost)}</p></div>
+          </div>
+        </div>
+      )}
 
       <div className="grid gap-8 lg:grid-cols-2">
         <div className="rounded-xl bg-background p-6 shadow-sm">

@@ -58,6 +58,39 @@ export type Coupon = {
   created_at: string
 }
 
+export type ManualSale = {
+  id: number
+  product_id: number
+  product_code?: string
+  product_name?: string
+  customer_name: string
+  contact?: string | null
+  sale_date: string
+  payment_date?: string | null
+  quantity: number
+  unit_price: string | number
+  unit_cost: string | number
+  profit?: string | number
+  status: 'pago' | 'pendente'
+  notes?: string | null
+}
+
+export type ManualSalesStats = {
+  total_revenue: string | number
+  total_profit: string | number
+  total_cost: string | number
+  sales_count: number
+  by_product: {
+    id: number
+    code: string
+    name: string
+    total_quantity: string | number
+    total_revenue: string | number
+    total_profit: string | number
+  }[]
+  by_month: { month: string; revenue: string | number; profit: string | number }[]
+}
+
 export type StockOverview = {
   products: Product[]
   low_stock: Product[]
