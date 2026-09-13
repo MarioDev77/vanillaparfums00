@@ -7,7 +7,7 @@ const SALE_COLUMNS = `
   to_char(ms.sale_date, 'YYYY-MM-DD') AS sale_date,
   to_char(ms.payment_date, 'YYYY-MM-DD') AS payment_date,
   ms.quantity, ms.unit_price, ms.unit_cost, ms.status, ms.payment_method, ms.notes,
-  ms.created_at, ms.updated_at,
+  ms.receipt_url, ms.created_at, ms.updated_at,
   p.code AS product_code, p.name AS product_name,
   (ms.unit_price - ms.unit_cost) * ms.quantity AS profit
 `;
@@ -32,7 +32,7 @@ async function create(req, res, next) {
   try {
     const {
       product_id, customer_name, contact, sale_date, payment_date,
-      quantity, unit_price, status, payment_method, notes,
+      quantity, unit_price, status, payment_method, notes, receipt_url,
     } = req.body;
 
     if (!product_id || !customer_name || !unit_price) {
@@ -48,8 +48,8 @@ async function create(req, res, next) {
     const inserted = await pool.query(
       `INSERT INTO manual_sales (
         product_id, customer_name, contact, sale_date, payment_date,
-        quantity, unit_price, unit_cost, status, payment_method, notes
-      ) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11)
+        quantity, unit_price, unit_cost, status, payment_method, notes, receipt_url
+      ) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12)
       RETURNING id`,
       [
         product_id,
@@ -63,6 +63,7 @@ async function create(req, res, next) {
         status || 'pendente',
         payment_method || 'dinheiro',
         notes || null,
+        receipt_url || null,
       ]
     );
 
@@ -102,12 +103,12 @@ async function update(req, res, next) {
       setClauses.push(`unit_cost = $${values.length}`);
     }
 
-    const allowed = ['customer_name', 'contact', 'sale_date', 'payment_date', 'quantity', 'unit_price', 'status', 'payment_method', 'notes'];
+    const allowed = ['customer_name', 'contact', 'sale_date', 'payment_date', 'quantity', 'unit_price', 'status', 'payment_method', 'notes', 'receipt_url'];
 
     allowed.forEach((field) => {
       if (fields[field] !== undefined) {
         let value = fields[field];
-        if (['contact', 'payment_date', 'notes'].includes(field) && value === '') {
+        if (['contact', 'payment_date', 'notes', 'receipt_url'].includes(field) && value === '') {
           value = null;
         }
         values.push(value);

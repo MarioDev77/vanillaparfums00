@@ -13,6 +13,9 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'Envie uma imagem de até 5MB.' }, { status: 400 })
   }
 
-  const blob = await put(`products/${Date.now()}-${file.name}`, file, { access: 'public' })
+  const rawFolder = formData.get('folder')
+  const folder = rawFolder === 'receipts' ? 'receipts' : 'products'
+
+  const blob = await put(`${folder}/${Date.now()}-${file.name}`, file, { access: 'public' })
   return NextResponse.json({ url: blob.url })
 }

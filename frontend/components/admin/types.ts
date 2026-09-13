@@ -74,6 +74,7 @@ export type ManualSale = {
   status: 'pago' | 'pendente'
   payment_method: 'pix' | 'dinheiro'
   notes?: string | null
+  receipt_url?: string | null
 }
 
 export const MANUAL_SALE_PAYMENT_METHODS: { value: 'pix' | 'dinheiro'; label: string }[] = [

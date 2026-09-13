@@ -1,6 +1,6 @@
 'use client'
 import { FormEvent, useEffect, useState } from 'react'
-import { CheckCircle2, Download, FileDown, Pencil, Trash2, X } from 'lucide-react'
+import { CheckCircle2, Download, FileDown, Loader2, Paperclip, Pencil, Trash2, X } from 'lucide-react'
 import { adminFetch, adminJson } from '@/lib/admin-client'
 import {
   FinanceMonthPoint, FinanceSummary, MANUAL_SALE_PAYMENT_METHODS, ManualSale,
@@ -97,6 +97,7 @@ const empty = {
   status: 'pendente' as 'pago' | 'pendente',
   payment_method: 'dinheiro' as 'pix' | 'dinheiro',
   notes: '',
+  receipt_url: '',
 }
 
 const inputClass = 'mt-1 w-full rounded-md border border-border bg-background/60 p-2 text-sm transition-colors focus:border-accent focus:outline-none'
@@ -114,6 +115,7 @@ export default function FinancePanel() {
   const [form, setForm] = useState(empty)
   const [editingId, setEditingId] = useState<number | null>(null)
   const [saving, setSaving] = useState(false)
+  const [uploadingReceipt, setUploadingReceipt] = useState(false)
   const [message, setMessage] = useState('')
   const [loading, setLoading] = useState(true)
 
@@ -186,6 +188,28 @@ export default function FinancePanel() {
     }
   }
 
+  async function uploadReceipt(file?: File) {
+    if (!file) return
+    if (!file.type.startsWith('image/') && file.type !== 'application/pdf') {
+      setMessage('Envie uma imagem ou PDF do comprovante.')
+      return
+    }
+    setUploadingReceipt(true)
+    setMessage('')
+    try {
+      const data = new FormData()
+      data.append('file', file)
+      data.append('folder', 'receipts')
+      const response = await adminFetch('/upload', { method: 'POST', body: data })
+      const json = await response.json()
+      if (response.ok) setForm((value) => ({ ...value, receipt_url: json.url }))
+      else setMessage(json.error || 'Não foi possível enviar o comprovante.')
+    } catch {
+      setMessage('Não foi possível enviar o comprovante.')
+    }
+    setUploadingReceipt(false)
+  }
+
   function startEdit(sale: ManualSale) {
     setEditingId(sale.id)
     setForm({
@@ -199,6 +223,7 @@ export default function FinancePanel() {
       status: sale.status,
       payment_method: sale.payment_method ?? 'dinheiro',
       notes: sale.notes ?? '',
+      receipt_url: sale.receipt_url ?? '',
     })
     setMessage('')
     window.scrollTo({ top: 0, behavior: 'smooth' })
@@ -225,6 +250,7 @@ export default function FinancePanel() {
       status: form.status,
       payment_method: form.payment_method,
       notes: form.notes,
+      receipt_url: form.receipt_url,
     }
     if (!payload.product_id || !payload.customer_name || !payload.unit_price) {
       setMessage('Perfume, cliente e valor de venda são obrigatórios.')
@@ -433,6 +459,26 @@ export default function FinancePanel() {
             <label className={labelClass}>Observações
               <textarea value={form.notes} onChange={(e) => setForm({ ...form, notes: e.target.value })} rows={2} className={inputClass} />
             </label>
+
+            <div>
+              <span className={labelClass}>Comprovante de pagamento</span>
+              {form.receipt_url && (
+                <a href={form.receipt_url} target="_blank" rel="noreferrer" className="mt-1 flex items-center gap-1.5 text-[11px] text-accent-foreground hover:underline">
+                  <Paperclip size={12} /> Ver comprovante enviado
+                </a>
+              )}
+              <label className="mt-1 flex w-fit cursor-pointer items-center gap-1.5 rounded-md border border-border px-2.5 py-1.5 text-[10px] uppercase tracking-widest hover:bg-secondary">
+                {uploadingReceipt ? <Loader2 size={12} className="animate-spin" /> : <Paperclip size={12} />}
+                {uploadingReceipt ? 'Enviando...' : form.receipt_url ? 'Trocar comprovante' : 'Enviar foto do comprovante'}
+                <input
+                  type="file"
+                  accept="image/*,application/pdf"
+                  onChange={(e) => uploadReceipt(e.target.files?.[0])}
+                  className="sr-only"
+                  disabled={uploadingReceipt}
+                />
+              </label>
+            </div>
           </div>
 
           {message && <p className="mt-2 text-xs text-accent-foreground">{message}</p>}
@@ -496,7 +542,12 @@ export default function FinancePanel() {
                         </button>
                       </td>
                       <td className="p-2">
-                        <div className="flex gap-1.5">
+                        <div className="flex items-center gap-1.5">
+                          {sale.receipt_url && (
+                            <a href={sale.receipt_url} target="_blank" rel="noreferrer" aria-label="Ver comprovante" title="Ver comprovante" className="text-accent-foreground hover:opacity-80">
+                              <Paperclip size={12} />
+                            </a>
+                          )}
                           <button onClick={() => startEdit(sale)} aria-label="Editar venda" className="hover:text-accent-foreground"><Pencil size={12} /></button>
                           <button onClick={() => remove(sale)} aria-label="Remover venda" className="text-red-700"><Trash2 size={12} /></button>
                         </div>
