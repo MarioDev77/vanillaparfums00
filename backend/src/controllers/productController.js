@@ -133,7 +133,13 @@ async function update(req, res, next) {
 
     allowed.forEach((field) => {
       if (fields[field] !== undefined) {
-        values.push(fields[field]);
+        let value = fields[field];
+        // "intensity" tem CHECK constraint (leve/moderada/intensa) que não aceita
+        // string vazia — precisa virar NULL, senão o Postgres rejeita o UPDATE.
+        if (field === 'intensity' && value === '') {
+          value = null;
+        }
+        values.push(value);
         setClauses.push(`${field} = $${values.length}`);
       }
     });
@@ -156,6 +162,12 @@ async function update(req, res, next) {
 
     return res.json(result.rows[0]);
   } catch (err) {
+    if (err.code === '23505') {
+      return res.status(409).json({ error: 'Já existe um produto com esse código.' });
+    }
+    if (err.code === '23514') {
+      return res.status(400).json({ error: 'Valor inválido em um dos campos (verifique intensidade e status).' });
+    }
     return next(err);
   }
 }
