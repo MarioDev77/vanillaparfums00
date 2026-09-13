@@ -46,7 +46,7 @@ async function create(req, res, next) {
 
     for (const item of items) {
       const productResult = await client.query(
-        'SELECT id, price, stock_quantity, status FROM products WHERE id = $1 FOR UPDATE',
+        'SELECT id, price, cost, stock_quantity, status FROM products WHERE id = $1 FOR UPDATE',
         [item.product_id]
       );
       const product = productResult.rows[0];
@@ -61,6 +61,7 @@ async function create(req, res, next) {
       }
 
       const unitPrice = parseFloat(product.price);
+      const unitCost = parseFloat(product.cost) || 0;
       const lineSubtotal = unitPrice * item.quantity;
       subtotal += lineSubtotal;
 
@@ -68,6 +69,7 @@ async function create(req, res, next) {
         product_id: product.id,
         quantity: item.quantity,
         unit_price: unitPrice,
+        unit_cost: unitCost,
         subtotal: lineSubtotal,
       });
     }
@@ -110,9 +112,9 @@ async function create(req, res, next) {
 
     for (const item of validatedItems) {
       await client.query(
-        `INSERT INTO order_items (order_id, product_id, quantity, unit_price, subtotal)
-         VALUES ($1,$2,$3,$4,$5)`,
-        [order.id, item.product_id, item.quantity, item.unit_price, item.subtotal]
+        `INSERT INTO order_items (order_id, product_id, quantity, unit_price, unit_cost, subtotal)
+         VALUES ($1,$2,$3,$4,$5,$6)`,
+        [order.id, item.product_id, item.quantity, item.unit_price, item.unit_cost, item.subtotal]
       );
 
       const newQuantityResult = await client.query(

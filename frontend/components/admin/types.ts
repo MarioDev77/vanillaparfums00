@@ -163,6 +163,35 @@ export const ORDER_STATUSES: { value: OrderStatus; label: string }[] = [
   { value: 'cancelado', label: 'Cancelado' },
 ]
 
+export type FinanceSummary = {
+  total_revenue: number
+  total_cost: number
+  total_profit: number
+  sales_count: number
+  manual: { revenue: number; cost: number; count: number }
+  orders: { revenue: number; cost: number; count: number }
+  receivables_total: number
+  receivables_count: number
+}
+
+export type FinanceMonthPoint = { month: string; revenue: number; profit: number }
+
+export type Receivable = {
+  id: number
+  source: 'manual' | 'pedido'
+  customer: string
+  contact?: string | null
+  description: string
+  date: string
+  amount: number
+}
+
+export type ReceivablesResponse = {
+  items: Receivable[]
+  total: number
+  count: number
+}
+
 export function formatMoney(value: string | number) {
   const n = typeof value === 'string' ? parseFloat(value) : value
   return n.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })
