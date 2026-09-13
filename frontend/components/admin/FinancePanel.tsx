@@ -463,13 +463,13 @@ export default function FinancePanel() {
             <div>
               <span className={labelClass}>Comprovante de pagamento</span>
               {form.receipt_url && (
-                <a href={form.receipt_url} target="_blank" rel="noreferrer" className="mt-1 flex items-center gap-1.5 text-[11px] text-accent-foreground hover:underline">
-                  <Paperclip size={12} /> Ver comprovante enviado
+                <a href={form.receipt_url} target="_blank" rel="noreferrer" className="mt-1 flex items-center gap-1.5 truncate text-[11px] text-accent-foreground hover:underline">
+                  <Paperclip size={12} className="shrink-0" /> <span className="truncate">Ver comprovante enviado</span>
                 </a>
               )}
-              <label className="mt-1 flex w-fit cursor-pointer items-center gap-1.5 rounded-md border border-border px-2.5 py-1.5 text-[10px] uppercase tracking-widest hover:bg-secondary">
-                {uploadingReceipt ? <Loader2 size={12} className="animate-spin" /> : <Paperclip size={12} />}
-                {uploadingReceipt ? 'Enviando...' : form.receipt_url ? 'Trocar comprovante' : 'Enviar foto do comprovante'}
+              <label className="mt-1 flex w-full cursor-pointer items-center justify-center gap-1.5 rounded-md border border-border px-2.5 py-2 text-center text-[10px] uppercase tracking-widest hover:bg-secondary">
+                {uploadingReceipt ? <Loader2 size={12} className="shrink-0 animate-spin" /> : <Paperclip size={12} className="shrink-0" />}
+                <span className="truncate">{uploadingReceipt ? 'Enviando...' : form.receipt_url ? 'Trocar comprovante' : 'Enviar foto do comprovante'}</span>
                 <input
                   type="file"
                   accept="image/*,application/pdf"
