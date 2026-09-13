@@ -174,6 +174,18 @@ export default function FinancePanel() {
     }
   }
 
+  async function toggleStatus(sale: ManualSale) {
+    const nextStatus = sale.status === 'pago' ? 'pendente' : 'pago'
+    setSales((value) => value.map((s) => (s.id === sale.id ? { ...s, status: nextStatus } : s)))
+    try {
+      await adminJson(`/manual-sales/${sale.id}`, { method: 'PUT', body: JSON.stringify({ status: nextStatus }) })
+      loadFinance()
+    } catch {
+      setSales((value) => value.map((s) => (s.id === sale.id ? { ...s, status: sale.status } : s)))
+      setMessage('Não foi possível atualizar o status dessa venda.')
+    }
+  }
+
   function startEdit(sale: ManualSale) {
     setEditingId(sale.id)
     setForm({
@@ -474,9 +486,14 @@ export default function FinancePanel() {
                       <td className={`p-2 ${Number(sale.profit) < 0 ? 'text-red-700' : 'text-accent-foreground'}`}>{formatMoney(sale.profit ?? 0)}</td>
                       <td className="p-2 text-[11px]">{sale.payment_method === 'pix' ? 'Pix' : 'Dinheiro'}</td>
                       <td className="p-2">
-                        <span className={`inline-block px-1.5 py-0.5 text-[9px] uppercase tracking-widest ${sale.status === 'pago' ? 'bg-accent text-accent-foreground' : 'border border-border text-muted-foreground'}`}>
+                        <button
+                          type="button"
+                          onClick={() => toggleStatus(sale)}
+                          title="Clique para alternar o status"
+                          className={`inline-block cursor-pointer rounded-sm px-1.5 py-0.5 text-[9px] uppercase tracking-widest transition-colors ${sale.status === 'pago' ? 'bg-accent text-accent-foreground hover:opacity-80' : 'border border-border text-muted-foreground hover:bg-secondary'}`}
+                        >
                           {sale.status === 'pago' ? 'Pago' : 'Pend.'}
-                        </span>
+                        </button>
                       </td>
                       <td className="p-2">
                         <div className="flex gap-1.5">
