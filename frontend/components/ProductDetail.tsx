@@ -1,7 +1,7 @@
 'use client'
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import Image from 'next/image'
-import { Heart, Share2, ShoppingBag } from 'lucide-react'
+import { Heart, Link2, Share2, ShoppingBag } from 'lucide-react'
 import { favKey, type CatalogProduct } from '@/lib/catalog'
 import { useFavorites } from '@/lib/favorites-context'
 import { useCart } from '@/lib/cart-context'
@@ -12,21 +12,46 @@ export default function ProductDetail({ product }: { product: CatalogProduct }) 
   const { favorites, toggleFavorite } = useFavorites()
   const cart = useCart()
   const [copied, setCopied] = useState(false)
+  const [shareOpen, setShareOpen] = useState(false)
+  const [canNativeShare, setCanNativeShare] = useState(false)
+  const shareBoxRef = useRef<HTMLDivElement>(null)
   const isFav = favorites.has(favKey(product))
   const hasPyramid = product.top_notes || product.heart_notes || product.base_notes
 
-  async function share() {
-    const shareText = `Olha esse perfume: ${product.name} da Vanilla Parfums.`
-    const shareUrl = typeof window !== 'undefined' ? window.location.href : undefined
-    if (typeof navigator !== 'undefined' && navigator.share) {
-      try { await navigator.share({ title: product.name, text: shareText, url: shareUrl }) } catch {}
-      return
+  // navigator só existe no cliente; checar depois de montar evita mismatch de hidratação
+  useEffect(() => {
+    setCanNativeShare(typeof navigator !== 'undefined' && typeof navigator.share === 'function')
+  }, [])
+
+  // fecha o menu ao clicar fora dele
+  useEffect(() => {
+    function onClickOutside(e: MouseEvent) {
+      if (shareBoxRef.current && !shareBoxRef.current.contains(e.target as Node)) setShareOpen(false)
     }
+    document.addEventListener('mousedown', onClickOutside)
+    return () => document.removeEventListener('mousedown', onClickOutside)
+  }, [])
+
+  const shareText = `Olha esse perfume: ${product.name} da Vanilla Parfums.`
+  const shareUrl = typeof window !== 'undefined' ? window.location.href : ''
+
+  async function copyLink() {
     try {
-      await navigator.clipboard.writeText(shareUrl ? `${shareText} ${shareUrl}` : shareText)
+      await navigator.clipboard.writeText(shareUrl)
       setCopied(true)
+      setShareOpen(false)
       setTimeout(() => setCopied(false), 2200)
     } catch {}
+  }
+
+  async function nativeShare() {
+    try {
+      await navigator.share({ title: product.name, text: shareText, url: shareUrl })
+      setShareOpen(false)
+    } catch {
+      // painel nativo do sistema falhou ou foi cancelado — deixa o menu aberto
+      // pra pessoa usar WhatsApp ou copiar o link normalmente
+    }
   }
 
   return (
@@ -54,9 +79,44 @@ export default function ProductDetail({ product }: { product: CatalogProduct }) 
           <button onClick={() => { cart.addItem(product); cart.openCart() }} className="flex flex-1 items-center justify-center gap-2 border border-primary py-3 text-[11px] uppercase tracking-[0.2em] text-primary transition hover:bg-primary hover:text-primary-foreground"><ShoppingBag size={15} /> Adicionar ao carrinho</button>
         </div>
 
-        <button onClick={share} className="mt-4 inline-flex items-center gap-2 text-xs text-muted-foreground transition hover:text-foreground">
-          <Share2 size={15} /> {copied ? 'Link copiado' : 'Compartilhar perfume'}
-        </button>
+        <div ref={shareBoxRef} className="relative mt-4 inline-block">
+          <button
+            onClick={() => setShareOpen((v) => !v)}
+            aria-haspopup="menu"
+            aria-expanded={shareOpen}
+            className="inline-flex items-center gap-2 text-xs text-muted-foreground transition hover:text-foreground"
+          >
+            <Share2 size={15} /> {copied ? 'Link copiado' : 'Compartilhar perfume'}
+          </button>
+
+          {shareOpen && (
+            <div role="menu" className="absolute left-0 top-full z-20 mt-2 w-48 border border-border bg-background py-1 shadow-lg">
+              <a
+                href={`/api/whatsapp?text=${encodeURIComponent(`${shareText} ${shareUrl}`)}`}
+                target="_blank"
+                rel="noreferrer"
+                onClick={() => setShareOpen(false)}
+                className="flex items-center gap-2 px-4 py-2.5 text-xs text-foreground transition hover:bg-secondary"
+              >
+                <WhatsAppIcon size={14} /> WhatsApp
+              </a>
+              <button
+                onClick={copyLink}
+                className="flex w-full items-center gap-2 px-4 py-2.5 text-left text-xs text-foreground transition hover:bg-secondary"
+              >
+                <Link2 size={14} /> Copiar link
+              </button>
+              {canNativeShare && (
+                <button
+                  onClick={nativeShare}
+                  className="flex w-full items-center gap-2 px-4 py-2.5 text-left text-xs text-foreground transition hover:bg-secondary"
+                >
+                  <Share2 size={14} /> Mais opções
+                </button>
+              )}
+            </div>
+          )}
+        </div>
 
         {product.description && <p className="mt-8 text-sm leading-7 text-muted-foreground">{product.description}</p>}
 
